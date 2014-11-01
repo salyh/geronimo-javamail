@@ -45,7 +45,7 @@ public class ProtocolProperties {
         this.protocol = protocol; 
         this.sslConnection = sslConnection; 
         this.defaultPort = defaultPort; 
-        // this helps avoid a lot of concatentates when retrieving properties. 
+        // this helps avoid a lot of concatenates when retrieving properties. 
         protocolPrefix = "mail." + protocol + ".";
     }
     

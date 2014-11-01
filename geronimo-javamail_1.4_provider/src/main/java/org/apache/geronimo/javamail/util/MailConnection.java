@@ -17,16 +17,15 @@
 
 package org.apache.geronimo.javamail.util;
 
-import java.io.IOException; 
-import java.io.InputStream; 
-import java.io.OutputStream; 
-import java.io.PrintStream; 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.net.Socket; 
+import java.net.Socket;
 import java.net.UnknownHostException;
-import java.security.GeneralSecurityException;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -37,7 +36,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer; 
+import java.util.StringTokenizer;
 
 import javax.mail.MessagingException;
 import javax.mail.Session;
@@ -49,14 +48,12 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
-import org.apache.geronimo.javamail.authentication.ClientAuthenticator; 
-import org.apache.geronimo.javamail.authentication.CramMD5Authenticator; 
-import org.apache.geronimo.javamail.authentication.DigestMD5Authenticator; 
-import org.apache.geronimo.javamail.authentication.LoginAuthenticator; 
-import org.apache.geronimo.javamail.authentication.PlainAuthenticator; 
-import org.apache.geronimo.javamail.authentication.SASLAuthenticator; 
-import org.apache.geronimo.javamail.util.CommandFailedException;      
-import org.apache.geronimo.javamail.util.InvalidCommandException;      
+import org.apache.geronimo.javamail.authentication.ClientAuthenticator;
+import org.apache.geronimo.javamail.authentication.CramMD5Authenticator;
+import org.apache.geronimo.javamail.authentication.DigestMD5Authenticator;
+import org.apache.geronimo.javamail.authentication.LoginAuthenticator;
+import org.apache.geronimo.javamail.authentication.PlainAuthenticator;
+import org.apache.geronimo.javamail.authentication.SASLAuthenticator;
 
 /**
  * Base class for all mail Store/Transport connection.  Centralizes management
@@ -92,7 +89,7 @@ public class MailConnection {
     protected static final String MAIL_FACTORY_PORT = "socketFactory.port";
 
     protected static final String MAIL_SSL_FACTORY = "ssl.socketFactory"; //GERONIMO-5429
-    protected static final String MAIL_SSL_FACTORY_CLASS = "socketFactory.class";
+    protected static final String MAIL_SSL_FACTORY_CLASS = "ssl.socketFactory.class";
     protected static final String MAIL_SSL_FACTORY_PORT = "ssl.socketFactory.port";
     protected static final String MAIL_SSL_PROTOCOLS = "ssl.protocols";
     protected static final String MAIL_SSL_CIPHERSUITES = "ssl.ciphersuites";
@@ -354,8 +351,8 @@ public class MailConnection {
 
                 // done indirectly, we need to invoke the method using reflection.
                 // This retrieves a factory instance.
-                Method getDefault = factoryClass.getMethod("getDefault", new Class[0]);
-                SSLSocketFactory defFactory = (SSLSocketFactory) getDefault.invoke(new Object(), new Object[0]);
+                //Method getDefault = factoryClass.getMethod("getDefault", new Class[0]); //TODO check instantiation of socket factory
+                Object defFactory = factoryClass.newInstance();// getDefault.invoke(new Object(), new Object[0]);
                 // now that we have the factory, there are two different createSocket() calls we use,
                 // depending on whether we have a localAddress override.
 
@@ -434,16 +431,21 @@ public class MailConnection {
     }
     
     private boolean createSocketFromConfiguredFactoryInstance(boolean ssl, boolean layer) throws IOException {
+        
+        
+        
         if (ssl) {
             Object sfProp = props.getPropertyAsObject(MAIL_SSL_FACTORY);
             if (sfProp != null && sfProp instanceof SSLSocketFactory) {
                 createSocketFromFactory((SSLSocketFactory) sfProp, layer);
+                debugOut("Creating "+(ssl?"":"non-")+"SSL "+(layer?"layered":"non-layered")+" socket using a instance of factory " + sfProp.getClass()+ " listening");
                 return true;
             }
         } else {
             Object sfProp = props.getPropertyAsObject(MAIL_FACTORY);
             if (sfProp != null && sfProp instanceof SocketFactory) {
                 createSocketFromFactory((SocketFactory) sfProp, layer);
+                debugOut("Creating "+(ssl?"":"non-")+"SSL "+(layer?"layered":"non-layered")+" socket using a instance of factory " + sfProp.getClass()+ " listening");
                 return true;
             }
         }
@@ -452,6 +454,10 @@ public class MailConnection {
     }
     
     private void createSSLSocketFromSSLContext(boolean layer) throws IOException{
+        
+        debugOut("Creating "+(layer?"layered ":"non-layered ")+"SSL socket using SSL Context");
+
+        
         try {
             SSLContext sslcontext = SSLContext.getInstance("TLS");
             

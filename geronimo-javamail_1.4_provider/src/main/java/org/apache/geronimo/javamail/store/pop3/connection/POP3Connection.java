@@ -599,7 +599,7 @@ public class POP3Connection extends MailConnection implements POP3Constants {
             throw new MessagingException("Unable to create MD5 digest", e);
         }
         // this will throw an exception if it gives an error failure
-        sendCommand("APOP " + username + " " + Hex.encode(digest));
+        sendCommand("APOP " + username + " " + new String(Hex.encode(digest)));
         // no exception, we must have passed
         return true;
     }
