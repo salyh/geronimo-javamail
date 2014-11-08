@@ -29,22 +29,22 @@ import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMessage.RecipientType;
 
 import junit.framework.Assert;
-import junit.framework.TestCase;
 
-import com.icegreen.greenmail.util.GreenMail;
-import com.icegreen.greenmail.util.ServerSetupTest;
+import org.apache.geronimo.javamail.testserver.AbstractProtocolTest;
 
-public class IssuesTest extends TestCase {
+public class IssuesTest extends AbstractProtocolTest {
 
     public void testGERONIMO6519() throws Exception {
+        
+        PrintStream original = System.out;
+        
         try {
-            GreenMail greenMail = new GreenMail(ServerSetupTest.SMTP);
-            greenMail.start();
-            greenMail.setUser("test@localhost", "test", "test");
+            
+            start();
             // Setup JavaMail session
             Properties props = new Properties();
             props.setProperty("mail.debug", "true");
-            props.setProperty("mail.smtp.port", String.valueOf(greenMail.getSmtp().getPort()));
+            props.setProperty("mail.smtp.port", String.valueOf(smtpConf.getListenerPort()));
             props.setProperty("mail.smtp.localhost", "some.full.qualified.name.com");
             
             
@@ -61,7 +61,7 @@ public class IssuesTest extends TestCase {
             Assert.assertTrue(baos.toString().contains("EHLO some.full.qualified.name.com"));
             
         } finally {
-            System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
+            System.setOut(original);
         }
         
         

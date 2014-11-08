@@ -1,0 +1,3696 @@
+Index: geronimo-javamail_1.4_mail/pom.xml
+===================================================================
+--- geronimo-javamail_1.4_mail/pom.xml	(Revision 1637608)
++++ geronimo-javamail_1.4_mail/pom.xml	(Arbeitskopie)
+@@ -27,7 +27,7 @@
+     <parent>
+         <groupId>org.apache.geronimo.javamail</groupId>
+         <artifactId>geronimo-javamail_1.4</artifactId>
+-        <version>1.8.5-SNAPSHOT</version>
++        <version>1.9.0-SNAPSHOT</version>
+     </parent>
+ 
+     <artifactId>geronimo-javamail_1.4_mail</artifactId>
+@@ -143,6 +143,7 @@
+                         </Export-Package>
+                         <Import-Package>
+                             javax.activation,
++                            javax.net,
+                             javax.mail*,
+                             javax.imageio*;resolution:="optional",
+                             javax.net.ssl*;resolution:="optional",
+Index: geronimo-javamail_1.4_provider/pom.xml
+===================================================================
+--- geronimo-javamail_1.4_provider/pom.xml	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/pom.xml	(Arbeitskopie)
+@@ -1,115 +1,357 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<!--
+-    Licensed to the Apache Software Foundation (ASF) under one
+-    or more contributor license agreements.  See the NOTICE file
+-    distributed with this work for additional information
+-    regarding copyright ownership.  The ASF licenses this file
+-    to you under the Apache License, Version 2.0 (the
+-    "License"); you may not use this file except in compliance
+-    with the License.  You may obtain a copy of the License at
++<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
++	license agreements. See the NOTICE file distributed with this work for additional 
++	information regarding copyright ownership. The ASF licenses this file to 
++	you under the Apache License, Version 2.0 (the "License"); you may not use 
++	this file except in compliance with the License. You may obtain a copy of 
++	the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
++	by applicable law or agreed to in writing, software distributed under the 
++	License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
++	OF ANY KIND, either express or implied. See the License for the specific 
++	language governing permissions and limitations under the License. -->
+ 
+-     http://www.apache.org/licenses/LICENSE-2.0
++<!-- $Rev$ $Date: 2014-07-20 09:36:35 +0200 (So, 20. Jul 2014) 
++	$ -->
+ 
+-    Unless required by applicable law or agreed to in writing,
+-    software distributed under the License is distributed on an
+-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+-    KIND, either express or implied.  See the License for the
+-    specific language governing permissions and limitations
+-    under the License.
+--->
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+ 
+-<!-- $Rev$ $Date$ -->
++	<modelVersion>4.0.0</modelVersion>
+ 
+-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
++	<parent>
++		<groupId>org.apache.geronimo.javamail</groupId>
++		<artifactId>geronimo-javamail_1.4</artifactId>
++		<version>1.9.0-SNAPSHOT</version>
++	</parent>
+ 
+-    <modelVersion>4.0.0</modelVersion>
++	<artifactId>geronimo-javamail_1.4_provider</artifactId>
++	<packaging>bundle</packaging>
++	<name>Geronimo JavaMail 1.4 :: Provider</name>
+ 
+-    <parent>
+-        <groupId>org.apache.geronimo.javamail</groupId>
+-        <artifactId>geronimo-javamail_1.4</artifactId>
+-        <version>1.8.5-SNAPSHOT</version>
+-    </parent>
++<properties>
++<james.version>3.0-beta4</james.version>
++</properties>
+ 
+-    <artifactId>geronimo-javamail_1.4_provider</artifactId>
+-    <packaging>bundle</packaging>
+-    <name>Geronimo JavaMail 1.4 :: Provider</name>
++	<dependencies>
++		<dependency>
++			<groupId>org.apache.geronimo.specs</groupId>
++			<artifactId>geronimo-activation_1.1_spec</artifactId>
++			<scope>provided</scope>
++		</dependency>
+ 
+-    <dependencies>
+-        <dependency>
+-            <groupId>org.apache.geronimo.specs</groupId>
+-            <artifactId>geronimo-activation_1.1_spec</artifactId>
+-            <scope>provided</scope>
+-        </dependency>
++		<dependency>
++			<groupId>org.apache.geronimo.specs</groupId>
++			<artifactId>geronimo-javamail_1.4_spec</artifactId>
++		</dependency>
+ 
+-        <dependency>
+-            <groupId>org.apache.geronimo.specs</groupId>
+-            <artifactId>geronimo-javamail_1.4_spec</artifactId>
+-            <scope>provided</scope>
+-        </dependency>
++		<dependency>
++			<groupId>junit</groupId>
++			<artifactId>junit</artifactId>
++			<scope>test</scope>
++		</dependency>
+ 
+-        <dependency>
+-            <groupId>junit</groupId>
+-            <artifactId>junit</artifactId>
+-            <scope>test</scope>
+-        </dependency>
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>apache-james-imap-processor</artifactId>
++			<version>0.3</version>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
+ 
+-        <dependency>
+-            <groupId>com.icegreen</groupId>
+-            <artifactId>greenmail</artifactId>
+-            <version>1.3.1b</version>
+-            <scope>test</scope>
+-            <exclusions>
+-                <exclusion>
+-                    <groupId>javax.mail</groupId>
+-                    <artifactId>mail</artifactId>
+-                </exclusion>
+-            </exclusions>
+-        </dependency>
+ 
+-        <dependency>
+-            <!-- Required for GreenMail -->
+-            <groupId>org.slf4j</groupId>
+-            <artifactId>slf4j-jdk14</artifactId>
+-            <version>1.3.1</version>
+-            <scope>test</scope>
+-        </dependency>
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-protocols-pop3</artifactId>
++			<version>${james.version}</version>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
+ 
+-    </dependencies>
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-protocols-imap4</artifactId>
++			<version>${james.version}</version>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
+ 
+-    <build>
+-        <plugins>
+-            <plugin>
+-                <groupId>org.apache.felix</groupId>
+-                <artifactId>maven-bundle-plugin</artifactId>
+-                <configuration>
+-                    <instructions>
+-                        <Bundle-SymbolicName>${groupId}.${artifactId};singleton=true</Bundle-SymbolicName>
+-                        <Specification-Title>JSR-919 Javamail API 1.4 provider bundle</Specification-Title>
+-                        <Specification-Vendor>Sun Microsystems, Inc.</Specification-Vendor>
+-                        <Specification-Version>1.4</Specification-Version>
+-                        <Private-Package>
+-                            org.apache.geronimo.javamail.util,
+-                            org.apache.geronimo.javamail.authentication
+-                        </Private-Package>
+-                        <Export-Package>
+-                            org.apache.geronimo.javamail.store*;version=1.4,
+-                            org.apache.geronimo.javamail.transport*;version=1.4,
+-                            org.apache.geronimo.javamail.handlers*;version=1.4
+-                        </Export-Package>
+-                        <Import-Package>
+-                            javax.activation,
+-                            javax.mail*,
+-                            org.apache.geronimo.mail.util,
+-                            javax.imageio*;resolution:="optional",
+-                            javax.net.ssl*;resolution:="optional",
+-                            javax.security.sasl*;resolution:="optional",
+-                            javax.security.auth.callback*;resolution:="optional"
+-                        </Import-Package>
+-                    </instructions>
+-                    <unpackBundle>true</unpackBundle>
+-                </configuration>
+-            </plugin>
+-        </plugins>
+-    </build>
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-protocols-smtp</artifactId>
++			<version>${james.version}</version>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
+ 
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>apache-james-mailbox-memory</artifactId>
++			<version>0.5</version>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>apache-james-mailbox-memory</artifactId>
++			<version>0.5</version>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-protocols-library</artifactId>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<version>${james.version}</version>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-protocols-library</artifactId>
++			<scope>test</scope>
++			<version>${james.version}</version>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-filesystem-api</artifactId>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<version>${james.version}</version>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-protocols-library</artifactId>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<version>${james.version}</version>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-data-library</artifactId>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<version>${james.version}</version>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-data-library</artifactId>
++			<scope>test</scope>
++			<version>${james.version}</version>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-data-file</artifactId>
++			<version>${james.version}</version>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-queue-file</artifactId>
++			<version>${james.version}</version>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-data-file</artifactId>
++			<version>${james.version}</version>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-queue-file</artifactId>
++			<version>${james.version}</version>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++		
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-queue-api</artifactId>
++			<version>${james.version}</version>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++		
++		<dependency>
++			<groupId>org.apache.james</groupId>
++			<artifactId>james-server-data-api</artifactId>
++			<version>${james.version}</version>
++			<type>test-jar</type>
++			<scope>test</scope>
++			<exclusions>
++				<exclusion>
++					<artifactId>mail</artifactId>
++					<groupId>javax.mail</groupId>
++				</exclusion>
++			</exclusions>
++		</dependency>
++		<dependency>
++	<groupId>org.slf4j</groupId>
++	<artifactId>slf4j-api</artifactId>
++	<version>1.7.2</version>
++	<scope>test</scope>
++</dependency>
++		
++<dependency>
++	<groupId>org.slf4j</groupId>
++	<artifactId>slf4j-simple</artifactId>
++	<version>1.7.2</version>
++	<scope>test</scope>
++</dependency>
++
++		<!--  <dependency>
++			
++			<groupId>org.slf4j</groupId>
++			<artifactId>slf4j-jdk14</artifactId>
++			<version>1.3.1</version>
++			<scope>test</scope>
++		</dependency>  -->
++
++	</dependencies>
++
++	<build>
++		<plugins>
++			<plugin>
++				<groupId>org.apache.felix</groupId>
++				<artifactId>maven-bundle-plugin</artifactId>
++				<configuration>
++					<instructions>
++						<Bundle-SymbolicName>${groupId}.${artifactId};singleton=true</Bundle-SymbolicName>
++						<Specification-Title>JSR-919 Javamail API 1.4 provider bundle</Specification-Title>
++						<Specification-Vendor>Sun Microsystems, Inc.</Specification-Vendor>
++						<Specification-Version>1.4</Specification-Version>
++						<Private-Package>
++							org.apache.geronimo.javamail.util,
++							org.apache.geronimo.javamail.authentication
++						</Private-Package>
++						<Export-Package>
++							org.apache.geronimo.javamail.store*;version=1.4,
++							org.apache.geronimo.javamail.transport*;version=1.4,
++							org.apache.geronimo.javamail.handlers*;version=1.4
++						</Export-Package>
++						<Import-Package>
++							javax.activation,
++							javax.net,
++							javax.mail*,
++							org.apache.geronimo.mail.util,
++							javax.imageio*;resolution:="optional",
++							javax.net.ssl*;resolution:="optional",
++							javax.security.sasl*;resolution:="optional",
++							javax.security.auth.callback*;resolution:="optional"
++						</Import-Package>
++					</instructions>
++					<unpackBundle>true</unpackBundle>
++				</configuration>
++			</plugin>
++		</plugins>
++	</build>
++
+ </project>
+Index: geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/store/imap/connection/IMAPConnection.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/store/imap/connection/IMAPConnection.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/store/imap/connection/IMAPConnection.java	(Arbeitskopie)
+@@ -141,30 +141,43 @@
+ 
+             // make sure we process these now
+             processPendingResponses();
++            
++            boolean requireTLS = props.getBooleanProperty(MAIL_STARTTLS_REQUIRED, false);
++            boolean enableTLS = props.getBooleanProperty(MAIL_STARTTLS_ENABLE, false);
++            boolean serverSupportsTLS = hasCapability(CAPABILITY_STARTTLS);
+ 
+-            // if we're not already using an SSL connection, and we have permission to issue STARTTLS, AND
+-            // the server supports this, then switch to TLS mode before continuing.
+-            if (!sslConnection && props.getBooleanProperty(MAIL_STARTTLS_ENABLE, false) && hasCapability(CAPABILITY_STARTTLS)) {
+-                // if the server supports TLS, then use it for the connection.
+-                // on our connection.
+-
+-                // tell the server of our intention to start a TLS session
+-                sendSimpleCommand("STARTTLS");
+-
+-                // The connection is then handled by the superclass level.
+-                getConnectedTLSSocket();
+-
+-                // create the special reader for pulling the responses.
+-                reader = new IMAPResponseStream(inputStream);
+-
+-                // the IMAP spec states that the capability response is independent of login state or
+-                // user, but I'm not sure I believe that to be the case.  It doesn't hurt to refresh
+-                // the information again after establishing a secure connection.
+-                getCapability();
+-                // and we need to repeat this check.
+-                if (extractResponse("PREAUTH") != null) {
+-                    preAuthorized = true;
++            // if we're not already using an SSL connection, and we have permission to issue STARTTLS or its even required
++            // try to setup a SSL connection
++            if (!sslConnection && (enableTLS || requireTLS)) {
++                
++                //if the server does not support TLS check if its required.
++                //If true then throw an error, if not establish a non SSL connection
++                if(requireTLS && !serverSupportsTLS) {
++                    throw new MessagingException("Server doesn't support required transport level security");
++                } else if (serverSupportsTLS){
++                    // tell the server of our intention to start a TLS session
++                    sendSimpleCommand("STARTTLS");
++    
++                    // The connection is then handled by the superclass level.
++                    getConnectedTLSSocket();
++    
++                    // create the special reader for pulling the responses.
++                    reader = new IMAPResponseStream(inputStream);
++    
++                    // the IMAP spec states that the capability response is independent of login state or
++                    // user, but I'm not sure I believe that to be the case.  It doesn't hurt to refresh
++                    // the information again after establishing a secure connection.
++                    getCapability();
++                    // and we need to repeat this check.
++                    if (extractResponse("PREAUTH") != null) {
++                        preAuthorized = true;
++                    }
++                } else {
++                    if (debug) {
++                        debugOut("STARTTLS is enabled but not required and server does not support it. So we establish a connection without transport level security");
++                    }
+                 }
++                
+             }
+ 
+             // damn, no login required.
+Index: geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/store/pop3/connection/POP3Connection.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/store/pop3/connection/POP3Connection.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/store/pop3/connection/POP3Connection.java	(Arbeitskopie)
+@@ -37,6 +37,7 @@
+ 
+ import org.apache.geronimo.javamail.authentication.AuthenticatorFactory;
+ import org.apache.geronimo.javamail.authentication.ClientAuthenticator;
++import org.apache.geronimo.javamail.store.imap.connection.IMAPResponseStream;
+ import org.apache.geronimo.javamail.store.pop3.POP3Constants;
+ import org.apache.geronimo.javamail.util.CommandFailedException;
+ import org.apache.geronimo.javamail.util.InvalidCommandException;
+@@ -57,7 +58,7 @@
+     static final protected String MAIL_AUTH_ENABLED = "auth.enable";
+     static final protected String MAIL_RESET_QUIT = "rsetbeforequit";
+     static final protected String MAIL_DISABLE_TOP = "disabletop";
+-    static final protected String MAIL_FORGET_TOP = "forgettopheaders";
++    //static final protected String MAIL_FORGET_TOP = "forgettopheaders"; //TODO forgettopheaders
+ 
+     // the initial greeting string, which might be required for APOP authentication.
+     protected String greeting;
+@@ -71,27 +72,22 @@
+     protected PrintWriter writer;
+     // this connection was closed unexpectedly
+     protected boolean closed;
+-    // indicates whether this conneciton is currently logged in.  Once
++    // indicates whether this connection is currently logged in.  Once
+     // we send a QUIT, we're finished.
+     protected boolean loggedIn;
+     // indicates whether we need to avoid using the TOP command
+     // when retrieving headers
+     protected boolean topDisabled = false;
++    // is TLS enabled on our part?
++    protected boolean useTLS = false;
++    // is TLS required on our part?
++    protected boolean requireTLS = false;
+ 
+     /**
+      * Normal constructor for an POP3Connection() object.
+      *
+-     * @param store    The store we're associated with (source of parameter values).
+-     * @param host     The target host name of the IMAP server.
+-     * @param port     The target listening port of the server.  Defaults to 119 if
+-     *                 the port is specified as -1.
+-     * @param username The login user name (can be null unless authentication is
+-     *                 required).
+-     * @param password Password associated with the userid account.  Can be null if
+-     *                 authentication is not required.
+-     * @param sslConnection
+-     *                 True if this is targetted as an SSLConnection.
+-     * @param debug    The session debug flag.
++     * @param props  The protocol properties abstraction containing our
++     *               property modifiers.
+      */
+     public POP3Connection(ProtocolProperties props) {
+         super(props);
+@@ -100,6 +96,11 @@
+         authEnabled = props.getBooleanProperty(MAIL_AUTH_ENABLED, false);
+         apopEnabled = props.getBooleanProperty(MAIL_APOP_ENABLED, false);
+         topDisabled = props.getBooleanProperty(MAIL_DISABLE_TOP, false);
++        // and also check for TLS enablement.
++        useTLS = props.getBooleanProperty(MAIL_STARTTLS_ENABLE, false);
++        // and also check if TLS is required.
++        requireTLS = props.getBooleanProperty(MAIL_STARTTLS_REQUIRED, false);
++       
+     }
+ 
+ 
+@@ -121,7 +122,35 @@
+             getConnection();
+             // consume the welcome line
+             getWelcome();
+-
++            
++            // if we're not already using an SSL connection, and we have permission to issue STARTTLS or its even required
++            // try to setup a SSL connection
++            if (!sslConnection && (useTLS || requireTLS)) {
++                
++                    // tell the server of our intention to start a TLS session
++                    POP3Response starttlsResponse = null;
++                    try {
++                        starttlsResponse = sendCommand("STLS");
++                    } catch (CommandFailedException e) {
++                       
++                    }
++                    
++                    //if the server does not support TLS check if its required.
++                    //If true then throw an error, if not establish a non SSL connection
++                    if(requireTLS && (starttlsResponse == null || starttlsResponse.isError())) {
++                        throw new MessagingException("Server doesn't support required transport level security");
++                    } else if(starttlsResponse != null && starttlsResponse.getStatus() == POP3Response.OK) {
++                     // The connection is then handled by the superclass level.
++                        getConnectedTLSSocket();
++                    } else {
++                        if (debug) {
++                            debugOut("STARTTLS is enabled but not required and server does not support it. So we establish a connection without transport level security");
++                        }
++                    }
++            }
++            
++            getConnection();
++            
+             // go login with the server
+             if (login())
+             {
+@@ -154,7 +183,7 @@
+             throw new MessagingException("Unable to obtain a connection to the POP3 server", e);
+         }
+ 
+-        // The POp3 protocol is inherently a string-based protocol, so we get
++        // The POP3 protocol is inherently a string-based protocol, so we get
+         // string readers/writers for the connection streams.  Note that we explicitly
+         // set the encoding to ensure that an inappropriate native encoding is not picked up.
+         try {
+@@ -210,7 +239,7 @@
+     }
+ 
+     /**
+-     * Test if the connnection has been forcibly closed.
++     * Test if the connection has been forcibly closed.
+      *
+      * @return True if the server disconnected the connection.
+      */
+@@ -259,7 +288,7 @@
+         byte[] data = null;
+ 
+         String line;
+-        MIMEInputReader source = new MIMEInputReader(reader);
++        //MIMEInputReader source = new MIMEInputReader(reader); //TODO unused
+ 
+         try {
+             line = reader.readLine();
+@@ -570,7 +599,7 @@
+             throw new MessagingException("Unable to create MD5 digest", e);
+         }
+         // this will throw an exception if it gives an error failure
+-        sendCommand("APOP " + username + " " + Hex.encode(digest));
++        sendCommand("APOP " + username + " " + new String(Hex.encode(digest)));
+         // no exception, we must have passed
+         return true;
+     }
+Index: geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/transport/smtp/SMTPConnection.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/transport/smtp/SMTPConnection.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/transport/smtp/SMTPConnection.java	(Arbeitskopie)
+@@ -64,6 +64,7 @@
+     protected static final String MAIL_SMTP_ALLOW8BITMIME = "allow8bitmime";
+     protected static final String MAIL_SMTP_REPORT_SUCCESS = "reportsuccess";
+     protected static final String MAIL_SMTP_STARTTLS_ENABLE = "starttls.enable";
++    protected static final String MAIL_SMTP_STARTTLS_REQUIRED = "starttls.required";
+     protected static final String MAIL_SMTP_AUTH = "auth";
+     protected static final String MAIL_SMTP_FROM = "from";
+     protected static final String MAIL_SMTP_DSN_RET = "dsn.ret";
+@@ -83,6 +84,8 @@
+     protected boolean serverTLS = false;
+     // is TLS enabled on our part?
+     protected boolean useTLS = false;
++    // is TLS required on our part?
++    protected boolean requireTLS = false;
+     // should we use 8BITMIME encoding if supported by the server?
+     protected boolean use8bit = false;
+ 
+@@ -98,6 +101,8 @@
+         reportSuccess = props.getBooleanProperty(MAIL_SMTP_REPORT_SUCCESS, false);
+         // and also check for TLS enablement.
+         useTLS = props.getBooleanProperty(MAIL_SMTP_STARTTLS_ENABLE, false);
++        // and also check if TLS is required.
++        requireTLS = props.getBooleanProperty(MAIL_SMTP_STARTTLS_REQUIRED, false);
+         // and also check for 8bitmime support
+         use8bit = props.getBooleanProperty(MAIL_SMTP_ALLOW8BITMIME, false);
+     }
+@@ -804,23 +809,31 @@
+             sendHelo();
+         }
+ 
+-        if (useTLS) {
+-            // if we've been told to use TLS, and this server doesn't support
+-            // it, then this is a failure
+-            if (!serverTLS) {
++        if (useTLS || requireTLS) {
++            // if we've been told to use TLS
++            // if its not required and server does not support it we establish an unsecure connection
++            //see GERONIMO-5873 and GERONIMO-5430
++            if (requireTLS && !serverTLS) {
++                // if we've been told to use TLS, and this server doesn't support
++                // it, then this is a failure
+                 throw new MessagingException("Server doesn't support required transport level security");
+-            }
+-            // if the server supports TLS, then use it for the connection.
+-            // on our connection.
+-            getConnectedTLSSocket();
++            } else if (serverTLS){
++                // if the server supports TLS, then use it for the connection.
++                // on our connection.
++                getConnectedTLSSocket();
+ 
+-            // some servers (gmail is one that I know of) only send a STARTTLS
+-            // extension message on the
+-            // first EHLO command. Now that we have the TLS handshaking
+-            // established, we need to send a
+-            // second EHLO message to retrieve the AUTH records from the server.
+-            if (!sendEhlo()) {
+-                throw new MessagingException("Failure sending EHLO command to SMTP server");
++                // some servers (gmail is one that I know of) only send a STARTTLS
++                // extension message on the
++                // first EHLO command. Now that we have the TLS handshaking
++                // established, we need to send a
++                // second EHLO message to retrieve the AUTH records from the server.
++                if (!sendEhlo()) {
++                    throw new MessagingException("Failure sending EHLO command to SMTP server");
++                }
++            } else {
++                if (debug) {
++                    debugOut("STARTTLS is enabled but not required and server does not support it. So we establish a connection without transport level security");
++                }
+             }
+         }
+ 
+@@ -928,8 +941,29 @@
+         useTLS = start;
+     }
+ 
++    
++    /**
++     * Return the current requireTLS property.
++     * 
++     * @return The current requireTLS property.
++     */
++    public boolean getRequireTLS() {
++        return requireTLS;
++    }
+ 
++
+     /**
++     * Set a new value for the requireTLS property.
++     * 
++     * @param require
++     *                  The new setting.
++     */
++    public void setRequireTLS(boolean require) {
++        requireTLS = require;
++    }
++
++
++    /**
+      * Process an extension string passed back as the EHLP response.
+      *
+      * @param extension
+Index: geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/util/MailConnection.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/util/MailConnection.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/util/MailConnection.java	(Arbeitskopie)
+@@ -17,32 +17,43 @@
+ 
+ package org.apache.geronimo.javamail.util;
+ 
+-import java.io.IOException; 
+-import java.io.InputStream; 
+-import java.io.OutputStream; 
+-import java.io.PrintStream; 
++import java.io.IOException;
++import java.io.InputStream;
++import java.io.OutputStream;
++import java.io.PrintStream;
+ import java.lang.reflect.InvocationTargetException;
+ import java.lang.reflect.Method;
+ import java.net.InetAddress;
+-import java.net.Socket; 
++import java.net.Socket;
+ import java.net.UnknownHostException;
++import java.security.KeyManagementException;
++import java.security.KeyStore;
++import java.security.KeyStoreException;
++import java.security.NoSuchAlgorithmException;
++import java.security.cert.CertificateException;
++import java.security.cert.X509Certificate;
+ import java.util.ArrayList;
++import java.util.Arrays;
+ import java.util.List;
+ import java.util.Map;
+-import java.util.StringTokenizer; 
++import java.util.StringTokenizer;
+ 
+ import javax.mail.MessagingException;
+ import javax.mail.Session;
++import javax.net.SocketFactory;
++import javax.net.ssl.SSLContext;
+ import javax.net.ssl.SSLSocket;
++import javax.net.ssl.SSLSocketFactory;
++import javax.net.ssl.TrustManager;
++import javax.net.ssl.TrustManagerFactory;
++import javax.net.ssl.X509TrustManager;
+ 
+-import org.apache.geronimo.javamail.authentication.ClientAuthenticator; 
+-import org.apache.geronimo.javamail.authentication.CramMD5Authenticator; 
+-import org.apache.geronimo.javamail.authentication.DigestMD5Authenticator; 
+-import org.apache.geronimo.javamail.authentication.LoginAuthenticator; 
+-import org.apache.geronimo.javamail.authentication.PlainAuthenticator; 
+-import org.apache.geronimo.javamail.authentication.SASLAuthenticator; 
+-import org.apache.geronimo.javamail.util.CommandFailedException;      
+-import org.apache.geronimo.javamail.util.InvalidCommandException;      
++import org.apache.geronimo.javamail.authentication.ClientAuthenticator;
++import org.apache.geronimo.javamail.authentication.CramMD5Authenticator;
++import org.apache.geronimo.javamail.authentication.DigestMD5Authenticator;
++import org.apache.geronimo.javamail.authentication.LoginAuthenticator;
++import org.apache.geronimo.javamail.authentication.PlainAuthenticator;
++import org.apache.geronimo.javamail.authentication.SASLAuthenticator;
+ 
+ /**
+  * Base class for all mail Store/Transport connection.  Centralizes management
+@@ -59,10 +70,10 @@
+     /**
+      * property keys for protocol properties.
+      */
+-    protected static final String MAIL_AUTH = "auth";
+     protected static final String MAIL_PORT = "port";
+     protected static final String MAIL_LOCALHOST = "localhost";
+     protected static final String MAIL_STARTTLS_ENABLE = "starttls.enable";
++    protected static final String MAIL_STARTTLS_REQUIRED = "starttls.required";
+     protected static final String MAIL_SSL_ENABLE = "ssl.enable";
+     protected static final String MAIL_TIMEOUT = "timeout";
+     protected static final String MAIL_SASL_ENABLE = "sasl.enable";
+@@ -71,11 +82,19 @@
+     protected static final String MAIL_SASL_MECHANISMS = "sasl.mechanisms";
+     protected static final String MAIL_PLAIN_DISABLE = "auth.plain.disable";
+     protected static final String MAIL_LOGIN_DISABLE = "auth.login.disable";
++    
++    protected static final String MAIL_FACTORY = "socketFactory"; //GERONIMO-5429
+     protected static final String MAIL_FACTORY_CLASS = "socketFactory.class";
+     protected static final String MAIL_FACTORY_FALLBACK = "socketFactory.fallback";
+     protected static final String MAIL_FACTORY_PORT = "socketFactory.port";
++
++    protected static final String MAIL_SSL_FACTORY = "ssl.socketFactory"; //GERONIMO-5429
++    protected static final String MAIL_SSL_FACTORY_CLASS = "ssl.socketFactory.class";
++    protected static final String MAIL_SSL_FACTORY_PORT = "ssl.socketFactory.port";
+     protected static final String MAIL_SSL_PROTOCOLS = "ssl.protocols";
+     protected static final String MAIL_SSL_CIPHERSUITES = "ssl.ciphersuites";
++    protected static final String MAIL_SSL_TRUST = "ssl.trust";
++
+     protected static final String MAIL_LOCALADDRESS = "localaddress";
+     protected static final String MAIL_LOCALPORT = "localport";
+     protected static final String MAIL_ENCODE_TRACE = "encodetrace";
+@@ -167,6 +186,11 @@
+         // initialize our debug settings from the session 
+         debug = session.getDebug(); 
+         debugStream = session.getDebugOut();
++        
++        String mailSSLEnable = props.getProperty(MAIL_SSL_ENABLE);
++        if(mailSSLEnable != null) {
++            this.sslConnection = Boolean.valueOf(mailSSLEnable);
++        }
+     }
+     
+     
+@@ -200,7 +224,7 @@
+             }
+         }
+     	
+-    	// Before we do anything, let's make sure that we succesfully received a host
++    	// Before we do anything, let's make sure that we successfully received a host
+     	if ( host == null ) {
+     		host = DEFAULT_MAIL_HOST;
+     	}
+@@ -292,41 +316,47 @@
+     protected void getConnectedSocket() throws IOException {
+         debugOut("Attempting plain socket connection to server " + serverHost + ":" + serverPort);
+ 
+-        // check the properties that control how we connect. 
+-        getConnectionProperties(); 
+-
+-        // the socket factory can be specified via a session property.  By default, we just directly
+-        // instantiate a socket without using a factory.
+-        String socketFactory = props.getProperty(MAIL_FACTORY_CLASS);
+-
+-        // make sure the socket is nulled out to start 
++        // make sure this is null 
+         socket = null;
+-
+-        // if there is no socket factory defined (normal), we just create a socket directly.
+-        if (socketFactory == null) {
+-            socket = new Socket(serverHost, serverPort, localAddress, localPort);
++        
++        createSocket(false);
++        
++        // if we have a timeout value, set that before returning 
++        if (timeout >= 0) {
++            socket.setSoTimeout(timeout);
+         }
++    }
++    
++    private boolean createSocketFromFactory(boolean ssl, boolean layer) throws IOException {
++        
++        String socketFactoryClass = props.getProperty(ssl?MAIL_SSL_FACTORY_CLASS:MAIL_FACTORY_CLASS);
++        
++        if(socketFactoryClass == null) {
++            return false;
++        }
++        
++        // we'll try this with potentially two different factories if we're allowed to fall back.
++        boolean fallback = props.getBooleanProperty(MAIL_FACTORY_FALLBACK, false);
++        int socketFactoryPort = props.getIntProperty(ssl?MAIL_SSL_FACTORY_PORT:MAIL_FACTORY_PORT, -1);
++        Integer portArg = new Integer(socketFactoryPort == -1 ? serverPort : socketFactoryPort);
++        
++        debugOut("Creating "+(ssl?"":"non-")+"SSL socket using factory " + socketFactoryClass+ " listening on port "+portArg);
+ 
+-        else {
++        while (true) {
+             try {
+-                int socketFactoryPort = props.getIntProperty(MAIL_FACTORY_PORT, -1);
+-
+-                // we choose the port used by the socket based on overrides.
+-                Integer portArg = new Integer(socketFactoryPort == -1 ? serverPort : socketFactoryPort);
+-
++                
+                 // use the current context loader to resolve this.
+                 ClassLoader loader = Thread.currentThread().getContextClassLoader();
+-                Class factoryClass = loader.loadClass(socketFactory);
++                Class factoryClass = loader.loadClass(socketFactoryClass);
+ 
+                 // done indirectly, we need to invoke the method using reflection.
+                 // This retrieves a factory instance.
+-                Method getDefault = factoryClass.getMethod("getDefault", new Class[0]);
+-                Object defFactory = getDefault.invoke(new Object(), new Object[0]);
+-
++                //Method getDefault = factoryClass.getMethod("getDefault", new Class[0]); //TODO check instantiation of socket factory
++                Object defFactory = factoryClass.newInstance();// getDefault.invoke(new Object(), new Object[0]);
+                 // now that we have the factory, there are two different createSocket() calls we use,
+                 // depending on whether we have a localAddress override.
+ 
+-                if (localAddress != null) {
++                if (localAddress != null && !layer) {
+                     // retrieve the createSocket(String, int, InetAddress, int) method.
+                     Class[] createSocketSig = new Class[] { String.class, Integer.TYPE, InetAddress.class, Integer.TYPE };
+                     Method createSocket = factoryClass.getMethod("createSocket", createSocketSig);
+@@ -333,21 +363,37 @@
+ 
+                     Object[] createSocketArgs = new Object[] { serverHost, portArg, localAddress, new Integer(localPort) };
+                     socket = (Socket)createSocket.invoke(defFactory, createSocketArgs);
++                    break; 
+                 }
+                 else {
+-                    // retrieve the createSocket(String, int) method.
+-                    Class[] createSocketSig = new Class[] { String.class, Integer.TYPE };
+-                    Method createSocket = factoryClass.getMethod("createSocket", createSocketSig);
++                    if(layer) {
++                     // retrieve the createSocket(String, int) method.
++                        Class[] createSocketSig = new Class[] { Socket.class, String.class, Integer.TYPE, Boolean.TYPE };
++                        Method createSocket = factoryClass.getMethod("createSocket", createSocketSig);
+ 
+-                    Object[] createSocketArgs = new Object[] { serverHost, portArg };
+-                    socket = (Socket)createSocket.invoke(defFactory, createSocketArgs);
++                        Object[] createSocketArgs = new Object[] { socket, serverHost, new Integer(serverPort), Boolean.TRUE };
++                        socket = (Socket)createSocket.invoke(defFactory, createSocketArgs);
++                        break; 
++                    } else {
++                     // retrieve the createSocket(String, int) method.
++                        Class[] createSocketSig = new Class[] { String.class, Integer.TYPE };
++                        Method createSocket = factoryClass.getMethod("createSocket", createSocketSig);
++
++                        Object[] createSocketArgs = new Object[] { serverHost, portArg };
++                        socket = (Socket)createSocket.invoke(defFactory, createSocketArgs);
++                        break; 
++                    }
++                    
++                    
+                 }
+             } catch (Throwable e) {
+-                // if a socket factor is specified, then we may need to fall back to a default.  This behavior
+-                // is controlled by (surprise) more session properties.
+-                if (props.getBooleanProperty(MAIL_FACTORY_FALLBACK, false)) {
+-                    debugOut("First plain socket attempt failed, falling back to default factory", e);
+-                    socket = new Socket(serverHost, serverPort, localAddress, localPort);
++                // if we're allowed to fallback, then use the default factory and try this again.  We only
++                // allow this to happen once.
++                if (fallback) {
++                    debugOut("First attempt at creating "+(ssl?"":"non-")+"SSL socket failed, falling back to default factory");
++                    socketFactoryClass = ssl?"javax.net.ssl.SSLSocketFactory":"javax.net.SocketFactory";
++                    fallback = false;
++                    continue;
+                 }
+                 // we have an exception.  We're going to throw an IOException, which may require unwrapping
+                 // or rewrapping the exception.
+@@ -357,8 +403,7 @@
+                         e = ((InvocationTargetException)e).getTargetException();
+                     }
+ 
+-                    debugOut("Plain socket creation failure", e);
+-
++                    debugOut("Failure creating "+(ssl?"":"non-")+"SSL socket", e);
+                     // throw this as an IOException, with the original exception attached.
+                     IOException ioe = new IOException("Error connecting to " + serverHost + ", " + serverPort);
+                     ioe.initCause(e);
+@@ -366,13 +411,110 @@
+                 }
+             }
+         }
+-        // if we have a timeout value, set that before returning 
+-        if (timeout >= 0) {
+-            socket.setSoTimeout(timeout);
++        
++        return true;
++    }
++    
++    private void createSocketFromFactory(SocketFactory sf, boolean layer) throws IOException {
++        
++        if(sf instanceof SSLSocketFactory && layer) {
++            socket = ((SSLSocketFactory) sf).createSocket(socket, serverHost, serverPort, true);
++            return;
+         }
++        
++        if (localAddress != null) {
++            socket = sf.createSocket(serverHost, serverPort, localAddress, localPort);
++        } else
++        {
++            socket = sf.createSocket(serverHost, serverPort);
++        }
+     }
++    
++    private boolean createSocketFromConfiguredFactoryInstance(boolean ssl, boolean layer) throws IOException {
++        
++        
++        
++        if (ssl) {
++            Object sfProp = props.getPropertyAsObject(MAIL_SSL_FACTORY);
++            if (sfProp != null && sfProp instanceof SSLSocketFactory) {
++                createSocketFromFactory((SSLSocketFactory) sfProp, layer);
++                debugOut("Creating "+(ssl?"":"non-")+"SSL "+(layer?"layered":"non-layered")+" socket using a instance of factory " + sfProp.getClass()+ " listening");
++                return true;
++            }
++        } else {
++            Object sfProp = props.getPropertyAsObject(MAIL_FACTORY);
++            if (sfProp != null && sfProp instanceof SocketFactory) {
++                createSocketFromFactory((SocketFactory) sfProp, layer);
++                debugOut("Creating "+(ssl?"":"non-")+"SSL "+(layer?"layered":"non-layered")+" socket using a instance of factory " + sfProp.getClass()+ " listening");
++                return true;
++            }
++        }
++        
++        return false;
++    }
++    
++    private void createSSLSocketFromSSLContext(boolean layer) throws IOException{
++        
++        debugOut("Creating "+(layer?"layered ":"non-layered ")+"SSL socket using SSL Context");
+ 
++        
++        try {
++            SSLContext sslcontext = SSLContext.getInstance("TLS");
++            
++            String sslTrust = props.getProperty(MAIL_SSL_TRUST);
++            
++            TrustManager trustManager = null;
++            
++            if(sslTrust != null) {
++                if(sslTrust.equals("*")) {
++                    trustManager = new SSLTrustManager(null, true); //trust all
++                } else
++                {
++                   String[] trustedHosts = sslTrust.split("\\s+");
++                   trustManager = new SSLTrustManager(trustedHosts, false); //trust some
++                   
++                   if(serverHost == null || serverHost.isEmpty() || !Arrays.asList(trustedHosts).contains(serverHost)) {
++                       throw new IOException("Server is not trusted: " + serverHost);
++                   }
++                   
++                }
++            } else {
++                trustManager = new SSLTrustManager(null, false); //default
++                
++            }
++             
++            sslcontext.init(null, new TrustManager[]{trustManager}, null);
++            
++            createSocketFromFactory(sslcontext.getSocketFactory(), layer);
++        } catch (KeyManagementException e) {
++            //cannot happen
++            throw new IOException(e);
++        } catch (NoSuchAlgorithmException e) {
++            //cannot happen
++            throw new IOException(e);
++        }
++    }
++    
++    private void createSocket(boolean ssl) throws IOException {
++        
++        if(createSocketFromConfiguredFactoryInstance(ssl, false)) {
++            return;
++        }
+ 
++        if(createSocketFromFactory(ssl, false)) {
++            return;
++        }
++        
++        if(!ssl) {
++            createSocketFromFactory(SocketFactory.getDefault(), false);
++            return;
++        }
++        
++          
++        createSSLSocketFromSSLContext(false);
++    }
++
++
+     /**
+      * Creates a connected SSL socket for an initial SSL connection.
+      *
+@@ -382,78 +524,12 @@
+         debugOut("Attempting SSL socket connection to server " + serverHost + ":" + serverPort);
+         // the socket factory can be specified via a protocol property, a session property, and if all else
+         // fails (which it usually does), we fall back to the standard factory class.
+-        String socketFactory = props.getProperty(MAIL_FACTORY_CLASS, "javax.net.ssl.SSLSocketFactory");
+ 
+         // make sure this is null 
+         socket = null;
++        
++        createSocket(true);
+ 
+-        // we'll try this with potentially two different factories if we're allowed to fall back.
+-        boolean fallback = props.getBooleanProperty(MAIL_FACTORY_FALLBACK, false);
+-
+-        while (true) {
+-            try {
+-                debugOut("Creating SSL socket using factory " + socketFactory);
+-
+-                int socketFactoryPort = props.getIntProperty(MAIL_FACTORY_PORT, -1);
+-
+-                // we choose the port used by the socket based on overrides.
+-                Integer portArg = new Integer(socketFactoryPort == -1 ? serverPort : socketFactoryPort);
+-
+-                // use the current context loader to resolve this.
+-                ClassLoader loader = Thread.currentThread().getContextClassLoader();
+-                Class factoryClass = loader.loadClass(socketFactory);
+-
+-                // done indirectly, we need to invoke the method using reflection.
+-                // This retrieves a factory instance.
+-                Method getDefault = factoryClass.getMethod("getDefault", new Class[0]);
+-                Object defFactory = getDefault.invoke(new Object(), new Object[0]);
+-
+-                // now that we have the factory, there are two different createSocket() calls we use,
+-                // depending on whether we have a localAddress override.
+-
+-                if (localAddress != null) {
+-                    // retrieve the createSocket(String, int, InetAddress, int) method.
+-                    Class[] createSocketSig = new Class[] { String.class, Integer.TYPE, InetAddress.class, Integer.TYPE };
+-                    Method createSocket = factoryClass.getMethod("createSocket", createSocketSig);
+-
+-                    Object[] createSocketArgs = new Object[] { serverHost, portArg, localAddress, new Integer(localPort) };
+-                    socket = (Socket)createSocket.invoke(defFactory, createSocketArgs);
+-                    break; 
+-                }
+-                else {
+-                    // retrieve the createSocket(String, int) method.
+-                    Class[] createSocketSig = new Class[] { String.class, Integer.TYPE };
+-                    Method createSocket = factoryClass.getMethod("createSocket", createSocketSig);
+-
+-                    Object[] createSocketArgs = new Object[] { serverHost, portArg };
+-                    socket = (Socket)createSocket.invoke(defFactory, createSocketArgs);
+-                    break; 
+-                }
+-            } catch (Throwable e) {
+-                // if we're allowed to fallback, then use the default factory and try this again.  We only
+-                // allow this to happen once.
+-                if (fallback) {
+-                    debugOut("First attempt at creating SSL socket failed, falling back to default factory");
+-                    socketFactory = "javax.net.ssl.SSLSocketFactory";
+-                    fallback = false;
+-                    continue;
+-                }
+-                // we have an exception.  We're going to throw an IOException, which may require unwrapping
+-                // or rewrapping the exception.
+-                else {
+-                    // we have an exception from the reflection, so unwrap the base exception
+-                    if (e instanceof InvocationTargetException) {
+-                        e = ((InvocationTargetException)e).getTargetException();
+-                    }
+-
+-                    debugOut("Failure creating SSL socket", e);
+-                    // throw this as an IOException, with the original exception attached.
+-                    IOException ioe = new IOException("Error connecting to " + serverHost + ", " + serverPort);
+-                    ioe.initCause(e);
+-                    throw ioe;
+-                }
+-            }
+-        }
+         // and set the timeout value 
+         if (timeout >= 0) {
+             socket.setSoTimeout(timeout);
+@@ -497,44 +573,39 @@
+      	try {
+ 
+             // we use the same target and port as the current connection.
+-            String host = socket.getInetAddress().getHostName();
+-            int port = socket.getPort();
++            serverHost = socket.getInetAddress().getHostName();
++            serverPort = socket.getPort();
+ 
+             // the socket factory can be specified via a session property.  By default, we use
+             // the native SSL factory.
+-            String socketFactory = props.getProperty(MAIL_FACTORY_CLASS, "javax.net.ssl.SSLSocketFactory");
++            if(createSocketFromConfiguredFactoryInstance(true, true)) {
++                debugOut("TLS socket factory configured as instance"); 
++            } else if(createSocketFromFactory(true, true)) {
++                debugOut("TLS socket factory configured as class"); 
++            } else {
++                debugOut("TLS socket factory from SSLContext"); 
++                createSSLSocketFromSSLContext(true);
++            }
+ 
+-            // use the current context loader to resolve this.
+-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+-            Class factoryClass = loader.loadClass(socketFactory);
+-
+-            // done indirectly, we need to invoke the method using reflection.
+-            // This retrieves a factory instance.
+-            Method getDefault = factoryClass.getMethod("getDefault", new Class[0]);
+-            Object defFactory = getDefault.invoke(new Object(), new Object[0]);
+-
+-            // now we need to invoke createSocket()
+-            Class[] createSocketSig = new Class[] { Socket.class, String.class, Integer.TYPE, Boolean.TYPE };
+-            Method createSocket = factoryClass.getMethod("createSocket", createSocketSig);
+-
+-            Object[] createSocketArgs = new Object[] { socket, host, new Integer(port), Boolean.TRUE };
+-
+-            // and finally create the socket
+-            Socket sslSocket = (Socket)createSocket.invoke(defFactory, createSocketArgs);
+-
+             // if this is an instance of SSLSocket (very common), try setting the protocol to be
+             // "TLSv1".  If this is some other class because of a factory override, we'll just have to
+             // accept that things will work.
+-            if (sslSocket instanceof SSLSocket) {
+-                ((SSLSocket)sslSocket).setEnabledProtocols(new String[] {"TLSv1"} );
+-                ((SSLSocket)sslSocket).setUseClientMode(true);
+-                debugOut("Initiating STARTTLS handshake"); 
+-                ((SSLSocket)sslSocket).startHandshake();
++            if (socket instanceof SSLSocket) {
++                
++                //TODO configure ciphers and co
++                //String[] suites = ((SSLSocket)socket).getSupportedCipherSuites();
++                //((SSLSocket)socket).setEnabledCipherSuites(suites);
++                
++                
++                
++                ((SSLSocket)socket).setEnabledProtocols(new String[] {"TLSv1"} );
++                ((SSLSocket)socket).setUseClientMode(true);
++                debugOut("Initiating STARTTLS handshake");
++                ((SSLSocket)socket).startHandshake();
++            } else {
++                throw new IOException("Socket is not an instance of SSLSocket, maybe wrong configured ssl factory?");
+             }
+ 
+-
+-            // this is our active socket now
+-            socket = sslSocket;
+             getConnectionStreams(); 
+             debugOut("TLS connection established"); 
+      	}
+@@ -838,4 +909,57 @@
+     public void setLocalHost(String localHost) {
+         this.localHost = localHost;
+     }
++    
++    private class SSLTrustManager implements X509TrustManager {
++        
++        private final X509TrustManager defaultTrustManager;
++        
++        private final boolean trustAll;
++        private final String[] trustedHosts;
++
++        SSLTrustManager(String[] trustedHosts, boolean trustAll) throws IOException{
++            super();
++            this.trustAll = trustAll;
++            this.trustedHosts = trustedHosts;
++            
++            try {
++                TrustManagerFactory defaultTrustManagerFactory = TrustManagerFactory.getInstance("X509");
++                defaultTrustManagerFactory.init((KeyStore)null);
++                defaultTrustManager = (X509TrustManager) defaultTrustManagerFactory.getTrustManagers()[0];
++            } catch (NoSuchAlgorithmException e) {
++                //cannot happen
++                throw new IOException(e);
++            } catch (KeyStoreException e) {
++                //cannot happen
++                throw new IOException(e);
++            }
++            
++        }
++
++        /* (non-Javadoc)
++         * @see javax.net.ssl.X509TrustManager#checkClientTrusted(java.security.cert.X509Certificate[], java.lang.String)
++         */
++        public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
++            defaultTrustManager.checkClientTrusted(chain, authType);
++            
++        }
++
++        /* (non-Javadoc)
++         * @see javax.net.ssl.X509TrustManager#checkServerTrusted(java.security.cert.X509Certificate[], java.lang.String)
++         */
++        public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
++            if (!trustAll || trustedHosts != null) {
++                defaultTrustManager.checkServerTrusted(chain, authType);
++            }
++            
++        }
++
++        /* (non-Javadoc)
++         * @see javax.net.ssl.X509TrustManager#getAcceptedIssuers()
++         */
++        public X509Certificate[] getAcceptedIssuers() {
++            return defaultTrustManager.getAcceptedIssuers();
++        }
++        
++    }
+ }
+Index: geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/util/ProtocolProperties.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/util/ProtocolProperties.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/main/java/org/apache/geronimo/javamail/util/ProtocolProperties.java	(Arbeitskopie)
+@@ -45,7 +45,7 @@
+         this.protocol = protocol; 
+         this.sslConnection = sslConnection; 
+         this.defaultPort = defaultPort; 
+-        // this helps avoid a lot of concatentates when retrieving properties. 
++        // this helps avoid a lot of concatenates when retrieving properties. 
+         protocolPrefix = "mail." + protocol + ".";
+     }
+     
+@@ -104,6 +104,21 @@
+         String fullName = protocolPrefix + name;
+         return session.getProperty(fullName);
+     }
++    
++    /**
++     * Get a property (as object) associated with this mail protocol.
++     *
++     * @param name   The name of the property.
++     *
++     * @return The property value (returns null if the property has not been set).
++     */
++    public Object getPropertyAsObject(String name) {
++        // the name we're given is the least qualified part of the name.  
++        // We construct the full property name
++        // using the protocol
++        String fullName = protocolPrefix + name;
++        return session.getProperties().get(fullName);
++    }
+ 
+     /**
+      * Get a property associated with this mail session.  Returns
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/issues/IssuesTest.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/issues/IssuesTest.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/issues/IssuesTest.java	(Arbeitskopie)
+@@ -29,22 +29,22 @@
+ import javax.mail.internet.MimeMessage.RecipientType;
+ 
+ import junit.framework.Assert;
+-import junit.framework.TestCase;
+ 
+-import com.icegreen.greenmail.util.GreenMail;
+-import com.icegreen.greenmail.util.ServerSetupTest;
++import org.apache.geronimo.javamail.testserver.AbstractProtocolTest;
+ 
+-public class IssuesTest extends TestCase {
++public class IssuesTest extends AbstractProtocolTest {
+ 
+     public void testGERONIMO6519() throws Exception {
++        
++        PrintStream original = System.out;
++        
+         try {
+-            GreenMail greenMail = new GreenMail(ServerSetupTest.SMTP);
+-            greenMail.start();
+-            greenMail.setUser("test@localhost", "test", "test");
++            
++            start();
+             // Setup JavaMail session
+             Properties props = new Properties();
+             props.setProperty("mail.debug", "true");
+-            props.setProperty("mail.smtp.port", String.valueOf(greenMail.getSmtp().getPort()));
++            props.setProperty("mail.smtp.port", String.valueOf(smtpConf.getListenerPort()));
+             props.setProperty("mail.smtp.localhost", "some.full.qualified.name.com");
+             
+             
+@@ -61,7 +61,7 @@
+             Assert.assertTrue(baos.toString().contains("EHLO some.full.qualified.name.com"));
+             
+         } finally {
+-            System.setOut(new PrintStream(new FileOutputStream(FileDescriptor.out)));
++            System.setOut(original);
+         }
+         
+         
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/imap/AuthenticationTest.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/imap/AuthenticationTest.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/imap/AuthenticationTest.java	(Arbeitskopie)
+@@ -16,15 +16,7 @@
+  */
+ package org.apache.geronimo.javamail.store.imap;
+ 
+-import junit.framework.TestCase;
+-import org.apache.geronimo.mail.util.Base64;
+-
+-import javax.mail.Folder;
+-import javax.mail.MessagingException;
+-import javax.mail.Session;
+-import javax.mail.Store;
+ import java.io.BufferedReader;
+-import java.io.BufferedWriter;
+ import java.io.IOException;
+ import java.io.InputStreamReader;
+ import java.io.OutputStreamWriter;
+@@ -33,8 +25,27 @@
+ import java.net.Socket;
+ import java.util.Properties;
+ 
++import javax.mail.MessagingException;
++import javax.mail.Session;
++import javax.mail.Store;
++
++import junit.framework.Assert;
++import junit.framework.TestCase;
++
++import org.apache.geronimo.mail.util.Base64;
++
+ public class AuthenticationTest extends TestCase {
+ 
++    public void testImplUsage() throws Exception {
++
++        //check that we load our mail impl
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "imap");
++        Session jmsession = Session.getInstance(props);
++        Assert.assertEquals(org.apache.geronimo.javamail.store.imap.IMAPStore.class, jmsession.getStore().getClass());
++        
++    }
++    
+     public void testAuthenticatePlain() throws Exception {
+ 
+         //greenmail does not have AUTHENTICATE "PLAIN" support
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/imap/IMAPStoreTest.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/imap/IMAPStoreTest.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/imap/IMAPStoreTest.java	(Arbeitskopie)
+@@ -18,74 +18,45 @@
+ 
+ import java.io.ByteArrayInputStream;
+ import java.io.ByteArrayOutputStream;
+-import java.io.InputStream;
+ import java.util.Properties;
+ 
+-import javax.mail.Address;
+ import javax.mail.Folder;
+ import javax.mail.Message;
+ import javax.mail.Session;
+ import javax.mail.Store;
+-import javax.mail.Transport;
+-import javax.mail.internet.InternetAddress;
+ import javax.mail.internet.MimeMessage;
+ import javax.mail.internet.MimeMultipart;
+ 
+-import junit.framework.TestCase;
++import org.apache.geronimo.javamail.testserver.AbstractProtocolTest;
+ 
+-import com.icegreen.greenmail.util.GreenMail;
+-import com.icegreen.greenmail.util.ServerSetupTest;
+ 
+-public class IMAPStoreTest extends TestCase {
++public class IMAPStoreTest extends AbstractProtocolTest {
+     
+-    private GreenMail greenMail;
+-    private Message[] messages;
+-    
+-    //@Override
+-    protected void setUp() throws Exception {
+-        // Setup GreenMail
+-        greenMail = new GreenMail(ServerSetupTest.SMTP_IMAP);
+-        greenMail.start();
+-        greenMail.setUser("test@localhost", "test", "test");
+-        // Setup JavaMail session
++    public void testSimple() throws Exception {
++       
++        start();
++        sendTestMsgs();
++        
+         Properties props = new Properties();
+-        props.setProperty("mail.smtp.port", String.valueOf(greenMail.getSmtp().getPort()));
+-        props.setProperty("mail.imap.port", String.valueOf(greenMail.getImap().getPort()));
+-        
+-        System.out.println("stmp.port: " + greenMail.getSmtp().getPort());
+-        System.out.println("imap port: " + greenMail.getImap().getPort());
+-        
++        props.setProperty("mail.imap.port", String.valueOf(imapConf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
+         Session session = Session.getInstance(props);
+-        // Send messages for the current test to GreenMail
+-        sendMessage(session, "/messages/multipart.msg");
+-        sendMessage(session, "/messages/simple.msg");
+         
+         // Load the message from IMAP
+         Store store = session.getStore("imap");
+-        store.connect("localhost", "test", "test");
++        store.connect("127.0.0.1", "serveruser", "serverpass");
+         Folder folder = store.getFolder("INBOX");
+         folder.open(Folder.READ_ONLY);
+-        this.messages = folder.getMessages();
+-        assertEquals(2, messages.length);
++        Message[] messages = new Message[2];
++        messages[0] = folder.getMessage(1);
++        messages[1] = folder.getMessage(2);
++        checkMessages(messages);
++        folder.close(false);
++        store.close();
+     }
+     
+-    //@Override
+-    protected void tearDown() throws Exception {
+-        greenMail.stop();
+-    }
+-
+-    private void sendMessage(Session session, String msgFile) throws Exception {
+-        MimeMessage message;
+-        InputStream in = IMAPStoreTest.class.getResourceAsStream(msgFile);
+-        try {
+-            message = new MimeMessage(session, in);
+-        } finally {
+-            in.close();
+-        }
+-        Transport.send(message, new Address[] { new InternetAddress("test@localhost") });
+-    }
+     
+-    public void testMessages() throws Exception {
++    private void checkMessages(Message[] messages) throws Exception {
+         MimeMessage msg1 = (MimeMessage)messages[0];
+         Object content = msg1.getContent();
+         assertTrue(content instanceof MimeMultipart);
+@@ -113,4 +84,6 @@
+         
+         assertEquals(input.getContentType().toLowerCase(), output.getContentType().toLowerCase());        
+     }
++    
++ 
+ }
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/pop3/POP3StoreTest.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/pop3/POP3StoreTest.java	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/store/pop3/POP3StoreTest.java	(Arbeitskopie)
+@@ -22,70 +22,67 @@
+ import java.util.Properties;
+ 
+ import javax.mail.Address;
++import javax.mail.FetchProfile;
++import javax.mail.Flags;
++import javax.mail.Flags.Flag;
+ import javax.mail.Folder;
+ import javax.mail.Message;
++import javax.mail.MessagingException;
+ import javax.mail.Session;
+ import javax.mail.Store;
+ import javax.mail.Transport;
++import javax.mail.UIDFolder;
+ import javax.mail.internet.InternetAddress;
+ import javax.mail.internet.MimeMessage;
+ import javax.mail.internet.MimeMultipart;
+ 
+-import junit.framework.TestCase;
++import junit.framework.Assert;
+ 
+-import com.icegreen.greenmail.util.GreenMail;
+-import com.icegreen.greenmail.util.ServerSetupTest;
++import org.apache.geronimo.javamail.testserver.AbstractProtocolTest;
++import org.apache.geronimo.javamail.testserver.MailServer.DummySocketFactory;
+ 
+-public class POP3StoreTest extends TestCase {
++public class POP3StoreTest extends AbstractProtocolTest {
++
+     
+-    private GreenMail greenMail;
+-    private Message[] messages;
+     
+-    //@Override
+-    protected void setUp() throws Exception {
+-        // Setup GreenMail
+-        greenMail = new GreenMail(ServerSetupTest.SMTP_POP3);       
+-        greenMail.start();
+-        greenMail.setUser("test@localhost", "test", "test");
++    
++    public void testSendRetrieve() throws Exception {
++        
++        start();
++        
+         // Setup JavaMail session
+         Properties props = new Properties();
+-        props.setProperty("mail.smtp.port", String.valueOf(greenMail.getSmtp().getPort()));
+-        props.setProperty("mail.pop3.port", String.valueOf(greenMail.getPop3().getPort()));
+-        
+-        System.out.println("stmp.port: " + greenMail.getSmtp().getPort());
+-        System.out.println("pop3 port: " + greenMail.getPop3().getPort());
+-        
++        props.setProperty("mail.smtp.port", String.valueOf(smtpConf.getListenerPort()));
++        props.setProperty("mail.debug","true");
+         Session session = Session.getInstance(props);
+         // Send messages for the current test to GreenMail
+         sendMessage(session, "/messages/multipart.msg");
+         sendMessage(session, "/messages/simple.msg");
++        server.ensureMsgCount(2);
+         
+-        // Load the message from POP3
+-        Store store = session.getStore("pop3");
+-        store.connect("localhost", "test", "test");
+-        Folder folder = store.getFolder("INBOX");
+-        folder.open(Folder.READ_ONLY);
+-        this.messages = folder.getMessages();
+-        assertEquals(2, messages.length);
++        props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        props.setProperty("mail.pop3.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        Assert.assertEquals(2, f.getMessageCount());
++        Message[] messages = new Message[2];
++        messages[0] = f.getMessage(1);
++        messages[1] = f.getMessage(2);
++        checkMessages(messages);
++        f.close(false);
++        store.close();
+     }
+     
+-    //@Override
+-    protected void tearDown() throws Exception {
+-        greenMail.stop();
+-    }
+ 
+-    private void sendMessage(Session session, String msgFile) throws Exception {
+-        MimeMessage message;
+-        InputStream in = POP3StoreTest.class.getResourceAsStream(msgFile);
+-        try {
+-            message = new MimeMessage(session, in);
+-        } finally {
+-            in.close();
+-        }
+-        Transport.send(message, new Address[] { new InternetAddress("test@localhost") });
+-    }
+     
+-    public void testMessages() throws Exception {
++    
++    private void checkMessages(Message[] messages) throws Exception {
+         MimeMessage msg1 = (MimeMessage)messages[0];
+         Object content = msg1.getContent();
+         assertTrue(content instanceof MimeMultipart);
+@@ -113,4 +110,340 @@
+         
+         assertEquals(input.getContentType().toLowerCase(), output.getContentType().toLowerCase());        
+     }
++    
++
++    public void testStartTLS() throws Exception {
++
++        pop3Conf.enableSSL(true, false);
++
++        start();
++
++        sendTestMsgs();
++        
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        props.setProperty("mail.pop3.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        props.setProperty("mail.pop3.starttls.required", "true");
++        props.setProperty("mail.pop3.ssl.trust", "*");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        Assert.assertEquals(2, f.getMessageCount());
++        f.close(false);
++        store.close();
++
++    }
++
++    public void testAPOP() throws Exception {
++
++        pop3Conf.enableSSL(true, false);
++
++        start();
++        sendTestMsgs();
++        
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        props.setProperty("mail.pop3.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        props.setProperty("mail.pop3.apop.enable", "true");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        Assert.assertEquals(2, f.getMessageCount());
++        f.close(false);
++        store.close();
++
++    }
++
++    public void testFetch() throws Exception {
++
++        
++        pop3Conf.enableSSL(true, false);
++
++        start();
++        sendTestMsgs();
++        
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        props.setProperty("mail.pop3.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        FetchProfile fp = new FetchProfile();
++        fp.add(UIDFolder.FetchProfileItem.UID);
++        fp.add(FetchProfile.Item.CONTENT_INFO);
++        
++        Message[] msgs = f.getMessages();
++        ByteArrayOutputStream bout = new ByteArrayOutputStream();
++        Assert.assertEquals(2, msgs.length);
++        
++        f.fetch(msgs, fp);
++        Assert.assertEquals(2, f.getMessageCount());
++        
++        for (int i = 0; i < msgs.length; i++) {
++            Message message = msgs[i];
++            message.writeTo(bout);
++            String msg = bout.toString();
++            Assert.assertNotNull(msg);
++            int num = message.getMessageNumber();
++            Assert.assertTrue(num > 0);
++            String uid = ((POP3Folder) f).getUID(message);
++            Assert.assertNotNull(uid);
++            Assert.assertTrue(!uid.isEmpty());
++        }
++        
++        f.close(false);
++        store.close();
++
++    }
++    
++    
++    
++    public void testDelete() throws Exception {
++
++        
++        pop3Conf.enableSSL(true, false);
++
++        start();
++        sendTestMsgs();
++        
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        props.setProperty("mail.pop3.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_WRITE); //TODO STAT only when folder open???
++        Assert.assertEquals(2, f.getMessageCount());
++        Message[] msgs =  f.getMessages();
++        f.setFlags(msgs, new Flags(Flag.DELETED), true);
++        Assert.assertEquals(2, f.getMessageCount());
++        f.getMessage(1).getSubject(); //should fail
++        //Assert.assertEquals(2, f.expunge());
++        f.close(false);
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        Assert.assertEquals(0, f.getMessageCount());
++        store.close();
++
++    }
++    
++    
++    
++    public void testStartTLSFail() throws Exception {
++
++        
++        pop3Conf.enableSSL(false, false);
++
++        start();
++        sendTestMsgs();
++        
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        props.setProperty("mail.pop3.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        props.setProperty("mail.pop3.starttls.required", "true");
++        props.setProperty("mail.pop3.ssl.trust", "*");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        try {
++            store.connect("127.0.0.1", "serveruser", "serverpass");
++            fail();
++        } catch (MessagingException e) {
++            //Expected
++        }
++    }
++
++    public void testSSLEnable() throws Exception {
++
++        
++        pop3Conf.enableSSL(false, true);
++
++        start();
++        sendTestMsgs();
++
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        props.setProperty("mail.pop3.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        props.setProperty("mail.pop3.ssl.enable", "true");
++        props.setProperty("mail.pop3.ssl.trust", "*");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        Assert.assertEquals(2, f.getMessageCount());
++        f.close(false);
++        store.close();
++
++    }
++
++    public void testSSLPop3s() throws Exception {
++
++        
++        pop3Conf.enableSSL(false, true);
++
++        start();
++        sendTestMsgs();
++
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3s");
++        props.setProperty("mail.pop3s.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        props.setProperty("mail.pop3s.ssl.trust", "*");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        Assert.assertEquals(2, f.getMessageCount());
++        f.close(false);
++        store.close();
++
++    }
++    
++    public void testSSLPop3sFactoryClass() throws Exception {
++
++        
++        pop3Conf.enableSSL(false, true);
++
++        start();
++        sendTestMsgs();
++
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3s");
++        props.setProperty("mail.pop3s.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        props.setProperty("mail.pop3s.ssl.trust", "*");
++        props.setProperty("mail.pop3s.ssl.socketFactory.class", DummySocketFactory.class.getName());
++       
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        try {
++            store.connect("127.0.0.1", "serveruser", "serverpass");
++            fail();
++        } catch (MessagingException e) {
++            Assert.assertEquals("dummy socket factory", e.getCause().getCause().getMessage());
++            
++            //Expected
++        }
++
++        
++        
++    }
++
++    public void testSSLPop3sFactoryInstance() throws Exception {
++
++        
++        pop3Conf.enableSSL(false, true);
++
++        start();
++        sendTestMsgs();
++
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3s");
++        props.setProperty("mail.pop3s.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        props.setProperty("mail.pop3s.ssl.trust", "*");
++        props.put("mail.pop3s.ssl.socketFactory", new DummySocketFactory());
++       
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        try {
++            store.connect("127.0.0.1", "serveruser", "serverpass");
++            fail();
++        } catch (MessagingException e) {
++            Assert.assertEquals("dummy socket factory", e.getCause().getMessage());
++            
++            //Expected
++        }
++
++    }
++    
++    public void testSSLPop3sNotEnabled() throws Exception {
++
++        
++        pop3Conf.enableSSL(false, false);
++
++        start();
++        sendTestMsgs();
++
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3s");
++        props.setProperty("mail.pop3s.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        props.setProperty("mail.pop3s.ssl.trust", "*");
++        props.setProperty("mail.pop3s.ssl.enable", "false");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        Assert.assertEquals(2, f.getMessageCount());
++        f.close(false);
++        store.close();
++
++    }
++    
++    public void testPop3GetMsgs() throws Exception {
++
++        
++        pop3Conf.enableSSL(false, false);
++
++        start();
++        sendTestMsgs();
++
++        Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        props.setProperty("mail.pop3.port", String.valueOf(pop3Conf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++
++        Session jmsession = Session.getInstance(props);
++        Store store = jmsession.getStore();
++        store.connect("127.0.0.1", "serveruser", "serverpass");
++        Folder f = store.getFolder("INBOX");
++        f.open(Folder.READ_ONLY); //TODO STAT only when folder open???
++        
++        
++        Message[] msgs =  f.getMessages();
++        ByteArrayOutputStream bout = new ByteArrayOutputStream();
++        Assert.assertEquals(2, msgs.length);
++        
++        for (int i = 0; i < msgs.length; i++) {
++            Message message = msgs[i];
++            message.writeTo(bout);
++            String msg = bout.toString();
++            Assert.assertNotNull(msg);
++            int num = message.getMessageNumber();
++            Assert.assertTrue(num > 0);
++            String uid = ((POP3Folder) f).getUID(message);
++            Assert.assertNotNull(uid);
++            Assert.assertTrue(!uid.isEmpty());
++        }
++        
++        f.close(false);
++        store.close();
++
++    }
++
+ }
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/AbstractProtocolTest.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/AbstractProtocolTest.java	(Revision 0)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/AbstractProtocolTest.java	(Arbeitskopie)
+@@ -0,0 +1,111 @@
++/**
++ *  Licensed to the Apache Software Foundation (ASF) under one or more
++ *  contributor license agreements.  See the NOTICE file distributed with
++ *  this work for additional information regarding copyright ownership.
++ *  The ASF licenses this file to You under the Apache License, Version 2.0
++ *  (the "License"); you may not use this file except in compliance with
++ *  the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++package org.apache.geronimo.javamail.testserver;
++
++import java.io.InputStream;
++import java.util.Properties;
++
++import javax.mail.Address;
++import javax.mail.Session;
++import javax.mail.Transport;
++import javax.mail.internet.InternetAddress;
++import javax.mail.internet.MimeMessage;
++
++import junit.framework.Assert;
++import junit.framework.TestCase;
++
++import org.apache.geronimo.javamail.store.pop3.POP3StoreTest;
++
++public abstract class AbstractProtocolTest extends TestCase {
++
++    protected MailServer server = new MailServer();
++    protected MailServer.Pop3TestConfiguration pop3Conf;
++    protected MailServer.SmtpTestConfiguration smtpConf;
++    protected MailServer.ImapTestConfiguration imapConf;
++
++    @Override
++    protected void setUp() throws Exception {
++        super.setUp();
++        pop3Conf = new MailServer.Pop3TestConfiguration();
++        smtpConf = new MailServer.SmtpTestConfiguration();
++        imapConf = new MailServer.ImapTestConfiguration();
++
++    }
++
++    protected void start() throws Exception {
++
++        server.start(smtpConf, pop3Conf, imapConf);
++
++    }
++
++    public void testImplUsageImap() throws Exception {
++
++        //check that we load our mail impl
++        final Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "imap");
++        final Session jmsession = Session.getInstance(props);
++        Assert.assertEquals(org.apache.geronimo.javamail.store.imap.IMAPStore.class, jmsession.getStore().getClass());
++
++    }
++
++    public void testImplUsagePop3() throws Exception {
++
++        //check that we load our mail impl
++        final Properties props = new Properties();
++        props.setProperty("mail.store.protocol", "pop3");
++        final Session jmsession = Session.getInstance(props);
++        Assert.assertEquals(org.apache.geronimo.javamail.store.pop3.POP3Store.class, jmsession.getStore().getClass());
++
++    }
++
++    public void testImplUsageSmtp() throws Exception {
++
++        //check that we load our mail impl
++        final Properties props = new Properties();
++        props.setProperty("mail.transport.protocol", "smtp");
++        final Session jmsession = Session.getInstance(props);
++        Assert.assertEquals(org.apache.geronimo.javamail.transport.smtp.SMTPTransport.class, jmsession.getTransport().getClass());
++
++    }
++
++    protected void sendTestMsgs() throws Exception {
++        final Properties props = new Properties();
++        props.setProperty("mail.smtp.port", String.valueOf(smtpConf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++        final Session session = Session.getInstance(props);
++        sendMessage(session, "/messages/multipart.msg");
++        sendMessage(session, "/messages/simple.msg");
++        server.ensureMsgCount(2);
++    }
++
++    protected void sendMessage(final Session session, final String msgFile) throws Exception {
++        MimeMessage message;
++        final InputStream in = POP3StoreTest.class.getResourceAsStream(msgFile);
++        try {
++            message = new MimeMessage(session, in);
++        } finally {
++            in.close();
++        }
++        Transport.send(message, new Address[] { new InternetAddress("serveruser@localhost") });
++    }
++
++    @Override
++    protected void tearDown() throws Exception {
++        server.stop();
++    }
++
++}
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/ApopCmdHandler.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/ApopCmdHandler.java	(Revision 0)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/ApopCmdHandler.java	(Arbeitskopie)
+@@ -0,0 +1,119 @@
++/**
++ *  Licensed to the Apache Software Foundation (ASF) under one or more
++ *  contributor license agreements.  See the NOTICE file distributed with
++ *  this work for additional information regarding copyright ownership.
++ *  The ASF licenses this file to You under the Apache License, Version 2.0
++ *  (the "License"); you may not use this file except in compliance with
++ *  the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++package org.apache.geronimo.javamail.testserver;
++
++import java.io.IOException;
++import java.math.BigInteger;
++import java.security.MessageDigest;
++import java.security.NoSuchAlgorithmException;
++
++import javax.annotation.Resource;
++
++import org.apache.james.mailbox.MailboxManager;
++import org.apache.james.mailbox.MailboxSession;
++import org.apache.james.mailbox.MessageManager;
++import org.apache.james.mailbox.exception.BadCredentialsException;
++import org.apache.james.mailbox.exception.MailboxException;
++import org.apache.james.mailbox.model.MailboxPath;
++import org.apache.james.pop3server.mailbox.MailboxAdapter;
++import org.apache.james.protocols.api.Request;
++import org.apache.james.protocols.api.Response;
++import org.apache.james.protocols.lib.POP3BeforeSMTPHelper;
++import org.apache.james.protocols.lib.Slf4jLoggerAdapter;
++import org.apache.james.protocols.pop3.POP3Response;
++import org.apache.james.protocols.pop3.POP3Session;
++import org.apache.james.protocols.pop3.core.AbstractApopCmdHandler;
++import org.apache.james.protocols.pop3.mailbox.Mailbox;
++
++public class ApopCmdHandler extends AbstractApopCmdHandler  {
++
++    private MailboxManager manager;
++
++
++    @Resource(name = "mailboxmanager")
++    public void setMailboxManager(MailboxManager manager) {
++        this.manager = manager;
++    }
++
++    @Override
++    public Response onCommand(POP3Session session, Request request) {
++        Response response =  super.onCommand(session, request);
++        if (POP3Response.OK_RESPONSE.equals(response.getRetCode())) {
++            POP3BeforeSMTPHelper.addIPAddress(session.getRemoteAddress().getAddress().getHostAddress());
++        }
++        return response;
++    }
++
++    @Override
++    protected Mailbox auth(POP3Session session, String apopTimestamp, String user, String digest) throws Exception {
++        MailboxSession mSession = null;
++        
++        String plaintextpassword = "serverpass";
++        
++        try {
++            final String toHash = apopTimestamp.trim()+plaintextpassword;
++            
++            if(!getMD5(toHash).equals(digest))
++            {
++                System.out.println("Digests does not match");
++                return null;
++            }
++            
++            
++            session.setUser(user);
++            
++            mSession = manager.createSystemSession(session.getUser(), new Slf4jLoggerAdapter(session.getLogger()));
++            manager.startProcessingRequest(mSession);
++            MailboxPath inbox = MailboxPath.inbox(mSession);
++            
++            // check if the mailbox exists, if not create it
++            if (!manager.mailboxExists(inbox, mSession)) {
++                manager.createMailbox(inbox, mSession);
++            }
++            MessageManager mailbox = manager.getMailbox(MailboxPath.inbox(mSession), mSession);
++            return new MailboxAdapter(manager, mailbox, mSession);
++        } catch (BadCredentialsException e) {
++            return null;
++        } catch (MailboxException e) {
++            throw new IOException("Unable to access mailbox for user " + session.getUser(), e);
++        } finally {
++            if (mSession != null) {
++                manager.endProcessingRequest(mSession);
++            }
++        }
++
++    }
++    
++    private static String getMD5(final String input) {
++        try {
++            final MessageDigest md = MessageDigest.getInstance("MD5");
++            final byte[] messageDigest = md.digest(input.getBytes());
++            final BigInteger number = new BigInteger(1, messageDigest);
++            String hashtext = number.toString(16);
++            // Now we need to zero pad it if you actually want the full 32 chars.
++            while (hashtext.length() < 32) {
++                hashtext = "0" + hashtext;
++            }
++            return hashtext;
++        }
++        catch (final NoSuchAlgorithmException e) {
++            throw new RuntimeException(e);
++        }
++    }
++
++}
++
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/MailServer.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/MailServer.java	(Revision 0)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/MailServer.java	(Arbeitskopie)
+@@ -0,0 +1,583 @@
++/**
++ *  Licensed to the Apache Software Foundation (ASF) under one or more
++ *  contributor license agreements.  See the NOTICE file distributed with
++ *  this work for additional information regarding copyright ownership.
++ *  The ASF licenses this file to You under the Apache License, Version 2.0
++ *  (the "License"); you may not use this file except in compliance with
++ *  the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++package org.apache.geronimo.javamail.testserver;
++
++import java.io.ByteArrayInputStream;
++import java.io.ByteArrayOutputStream;
++import java.io.File;
++import java.io.IOException;
++import java.io.UnsupportedEncodingException;
++import java.net.InetAddress;
++import java.net.Socket;
++import java.net.URL;
++import java.net.URLDecoder;
++import java.net.UnknownHostException;
++import java.util.ArrayList;
++import java.util.Collection;
++import java.util.Date;
++import java.util.Iterator;
++import java.util.List;
++import java.util.Map;
++import java.util.concurrent.Semaphore;
++
++import javax.mail.Flags;
++import javax.mail.internet.MimeMessage;
++import javax.net.ssl.SSLSocketFactory;
++
++import org.apache.commons.configuration.DefaultConfigurationBuilder;
++import org.apache.james.dnsservice.api.DNSService;
++import org.apache.james.domainlist.api.DomainListException;
++import org.apache.james.domainlist.api.mock.SimpleDomainList;
++import org.apache.james.filesystem.api.mock.MockFileSystem;
++import org.apache.james.imap.encode.main.DefaultImapEncoderFactory;
++import org.apache.james.imap.encode.main.DefaultLocalizer;
++import org.apache.james.imap.main.DefaultImapDecoderFactory;
++import org.apache.james.imap.processor.main.DefaultImapProcessorFactory;
++import org.apache.james.imapserver.netty.IMAPServer;
++import org.apache.james.mailbox.MailboxSession;
++import org.apache.james.mailbox.MessageManager;
++import org.apache.james.mailbox.acl.GroupMembershipResolver;
++import org.apache.james.mailbox.acl.MailboxACLResolver;
++import org.apache.james.mailbox.acl.SimpleGroupMembershipResolver;
++import org.apache.james.mailbox.acl.UnionMailboxACLResolver;
++import org.apache.james.mailbox.inmemory.InMemoryMailboxSessionMapperFactory;
++import org.apache.james.mailbox.model.MailboxConstants;
++import org.apache.james.mailbox.model.MailboxPath;
++import org.apache.james.mailbox.store.Authenticator;
++import org.apache.james.mailbox.store.StoreMailboxManager;
++import org.apache.james.mailrepository.mock.MockMailRepositoryStore;
++import org.apache.james.pop3server.netty.POP3Server;
++import org.apache.james.protocols.lib.PortUtil;
++import org.apache.james.protocols.lib.mock.MockProtocolHandlerLoader;
++import org.apache.james.queue.api.MailQueue;
++import org.apache.james.queue.api.MailQueue.MailQueueItem;
++import org.apache.james.queue.api.MailQueueFactory;
++import org.apache.james.queue.file.FileMailQueueFactory;
++import org.apache.james.rrt.api.RecipientRewriteTable;
++import org.apache.james.rrt.api.RecipientRewriteTableException;
++import org.apache.james.smtpserver.netty.SMTPServer;
++import org.apache.james.user.api.UsersRepositoryException;
++import org.apache.james.user.lib.mock.MockUsersRepository;
++import org.apache.mailet.HostAddress;
++import org.slf4j.Logger;
++import org.slf4j.LoggerFactory;
++
++//James based POP3 or IMAP or SMTP server (for unittesting only)
++public class MailServer {
++
++    private POP3Server pop3Server;
++    private IMAPServer imapServer;
++    private SMTPServer smtpServer;
++    private AlterableDNSServer dnsServer;
++    private final MockUsersRepository usersRepository = new MockUsersRepository();
++    private final MockFileSystem fileSystem = new MockFileSystem();
++    private MockProtocolHandlerLoader protocolHandlerChain;
++    private StoreMailboxManager<Long> mailboxManager;
++
++    private MockMailRepositoryStore store;
++    private DNSService dnsService;
++    private MailQueueFactory queueFactory;
++    private MailQueue queue;
++    private final Semaphore sem = new Semaphore(0);
++
++    public void ensureMsgCount(final int count) throws InterruptedException {
++        sem.acquire(count);
++    }
++
++    private class Fetcher extends Thread {
++
++        private final MailQueue queue;
++        private final MessageManager mailbox;
++        private final MailboxSession session;
++
++        Fetcher(final MailQueue queue, final MessageManager mailbox, final MailboxSession session) {
++            super();
++            this.queue = queue;
++            this.mailbox = mailbox;
++            this.session = session;
++        }
++
++        @Override
++        public void run() {
++            while (true) {
++                try {
++                    System.out.println("Await new mail ...");
++                    final MailQueueItem item = queue.deQueue();
++                    System.out.println("got it");
++                    final MimeMessage msg = item.getMail().getMessage();
++                    final ByteArrayOutputStream bout = new ByteArrayOutputStream();
++                    msg.writeTo(bout);
++                    mailbox.appendMessage(new ByteArrayInputStream(bout.toByteArray()), new Date(), session, true, new Flags());
++                    item.done(true);
++                    sem.release();
++                    System.out.println("mail copied over");
++                } catch (final Exception e) {
++                    e.printStackTrace();
++                    return;
++                }
++            }
++        }
++
++    }
++
++    public MailServer() {
++        super();
++        try {
++            usersRepository.addUser("serveruser", "serverpass");
++        } catch (final UsersRepositoryException e) {
++            throw new RuntimeException(e);
++        }
++
++    }
++
++    public void start(final SmtpTestConfiguration smtpConfig, final Pop3TestConfiguration pop3Config, final ImapTestConfiguration imapConfig)
++            throws Exception {
++        setUpServiceManager();
++
++        imapServer = new IMAPServer();
++
++        imapServer.setImapEncoder(DefaultImapEncoderFactory.createDefaultEncoder(new DefaultLocalizer(), false));
++        imapServer.setImapDecoder(DefaultImapDecoderFactory.createDecoder());
++
++        pop3Server = new POP3Server();
++        pop3Server.setProtocolHandlerLoader(protocolHandlerChain);
++
++        smtpServer = new SMTPServer() {
++            @Override
++            protected java.lang.Class<? extends org.apache.james.protocols.lib.handler.HandlersPackage> getJMXHandlersPackage() {
++                return RefinedJMXHandlersLoader.class;
++            };
++
++        };
++        smtpServer.setProtocolHandlerLoader(protocolHandlerChain);
++        smtpServer.setDNSService(dnsServer);
++
++        imapServer.setFileSystem(fileSystem);
++        pop3Server.setFileSystem(fileSystem);
++        smtpServer.setFileSystem(fileSystem);
++
++        final Logger log = LoggerFactory.getLogger("Mock");
++
++        imapServer.setLog(log);
++        pop3Server.setLog(log);
++        smtpServer.setLog(log);
++
++        final MailboxPath mailboxPath = new MailboxPath(MailboxConstants.USER_NAMESPACE, "serveruser", "INBOX");
++        final MailboxSession session = mailboxManager.login("serveruser", "serverpass", LoggerFactory.getLogger("Test"));
++
++        if (!mailboxManager.mailboxExists(mailboxPath, session)) {
++            mailboxManager.createMailbox(mailboxPath, session);
++        }
++
++        imapServer.setImapProcessor(DefaultImapProcessorFactory.createXListSupportingProcessor(mailboxManager, null, null));//new StoreSubscriptionManager(new InMemoryMailboxSessionMapperFactory()), null));
++
++        //setupTestMails(session, mailboxManager.getMailbox(mailboxPath, session));
++
++        new Fetcher(queue, mailboxManager.getMailbox(mailboxPath, session), session).start();
++
++        smtpConfig.init();
++        pop3Config.init();
++        imapConfig.init();
++
++        smtpServer.configure(smtpConfig);
++        pop3Server.configure(pop3Config);
++        imapServer.configure(imapConfig);
++
++        smtpServer.init();
++        pop3Server.init();
++        imapServer.init();
++
++    }
++
++    public void stop() throws Exception {
++
++        if (protocolHandlerChain != null) {
++            protocolHandlerChain.dispose();
++        }
++
++        if (imapServer != null) {
++            imapServer.destroy();
++        }
++
++        if (pop3Server != null) {
++            pop3Server.destroy();
++        }
++
++        if (smtpServer != null) {
++            smtpServer.destroy();
++        }
++
++    }
++
++    /* protected void setupTestMailsx(MailboxSession session, MessageManager mailbox) throws MailboxException {
++         mailbox.appendMessage(new ByteArrayInputStream(content), new Date(), session, true, new Flags());
++         byte[] content2 = ("EMPTY").getBytes();
++         mailbox.appendMessage(new ByteArrayInputStream(content2), new Date(), session, true, new Flags());
++     }*/
++
++    protected void setUpServiceManager() throws Exception {
++        protocolHandlerChain = new MockProtocolHandlerLoader();
++        protocolHandlerChain.put("usersrepository", usersRepository);
++
++        final InMemoryMailboxSessionMapperFactory factory = new InMemoryMailboxSessionMapperFactory();
++        final MailboxACLResolver aclResolver = new UnionMailboxACLResolver();
++        final GroupMembershipResolver groupMembershipResolver = new SimpleGroupMembershipResolver();
++        mailboxManager = new StoreMailboxManager<Long>(factory, new Authenticator() {
++
++            public boolean isAuthentic(final String userid, final CharSequence passwd) {
++                try {
++                    return usersRepository.test(userid, passwd.toString());
++                } catch (final UsersRepositoryException e) {
++                    e.printStackTrace();
++                    return false;
++                }
++            }
++        }, aclResolver, groupMembershipResolver);
++        mailboxManager.init();
++
++        protocolHandlerChain.put("mailboxmanager", mailboxManager);
++
++        protocolHandlerChain.put("fileSystem", fileSystem);
++
++        //smtp
++        dnsServer = new AlterableDNSServer();
++        store = new MockMailRepositoryStore();
++        protocolHandlerChain.put("mailStore", store);
++        protocolHandlerChain.put("dnsservice", dnsServer);
++        protocolHandlerChain.put("org.apache.james.smtpserver.protocol.DNSService", dnsService);
++
++        protocolHandlerChain.put("recipientrewritetable", new RecipientRewriteTable() {
++
++            public void addRegexMapping(final String user, final String domain, final String regex) throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void removeRegexMapping(final String user, final String domain, final String regex)
++                    throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void addAddressMapping(final String user, final String domain, final String address)
++                    throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void removeAddressMapping(final String user, final String domain, final String address)
++                    throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void addErrorMapping(final String user, final String domain, final String error) throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void removeErrorMapping(final String user, final String domain, final String error)
++                    throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public Collection<String> getUserDomainMappings(final String user, final String domain) throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void addMapping(final String user, final String domain, final String mapping) throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void removeMapping(final String user, final String domain, final String mapping) throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public Map<String, Collection<String>> getAllMappings() throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void addAliasDomainMapping(final String aliasDomain, final String realDomain) throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public void removeAliasDomainMapping(final String aliasDomain, final String realDomain) throws RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++
++            public Collection<String> getMappings(final String user, final String domain) throws ErrorMappingException,
++            RecipientRewriteTableException {
++                throw new UnsupportedOperationException("Not implemented");
++            }
++        });
++
++        protocolHandlerChain.put("org.apache.james.smtpserver.protocol.DNSService", dnsService);
++
++        final FileMailQueueFactory ff = new FileMailQueueFactory();// MockMailQueueFactory();
++        ff.setFileSystem(fileSystem);
++        queueFactory = ff;
++
++        queue = queueFactory.getQueue(MailQueueFactory.SPOOL);
++        protocolHandlerChain.put("mailqueuefactory", queueFactory);
++        protocolHandlerChain.put("domainlist", new SimpleDomainList() {
++
++            @Override
++            public String getDefaultDomain() {
++                return "localhost";
++            }
++
++            @Override
++            public String[] getDomains() throws DomainListException {
++                return new String[] { "localhost" };
++            }
++
++            @Override
++            public boolean containsDomain(final String serverName) {
++                return "localhost".equals(serverName);
++            }
++        });
++
++    }
++
++    /**
++     * @return the queue
++     */
++    public MailQueue getQueue() {
++        return queue;
++    }
++
++    protected static File getAbsoluteFilePathFromClassPath(final String fileNameFromClasspath) {
++
++        File jaasConfigFile = null;
++        final URL jaasConfigURL = MailServer.class.getClassLoader().getResource(fileNameFromClasspath);
++        if (jaasConfigURL != null) {
++            try {
++                jaasConfigFile = new File(URLDecoder.decode(jaasConfigURL.getFile(), "UTF-8"));
++            } catch (final UnsupportedEncodingException e) {
++                return null;
++            }
++
++            if (jaasConfigFile.exists() && jaasConfigFile.canRead()) {
++                return jaasConfigFile;
++            } else {
++
++                System.out.println("Cannot read from {}, maybe the file does not exists? " + jaasConfigFile.getAbsolutePath());
++            }
++
++        } else {
++            System.out.println("Failed to load " + fileNameFromClasspath);
++        }
++
++        return null;
++
++    }
++
++    public static abstract class AbstractTestConfiguration extends DefaultConfigurationBuilder {
++
++        private final int listenerPort = PortUtil.getNonPrivilegedPort();
++
++        /**
++         * @return the listenerPort
++         */
++        public int getListenerPort() {
++            return listenerPort;
++        }
++
++        public AbstractTestConfiguration enableSSL(final boolean enableStartTLS, final boolean enableSSL) {
++            addProperty("tls.[@startTLS]", enableStartTLS);
++            addProperty("tls.[@socketTLS]", enableSSL);
++            addProperty("tls.keystore", "file://" + getAbsoluteFilePathFromClassPath("dummykeystore.jks").getAbsolutePath());
++            addProperty("tls.secret", "123456");
++            addProperty("tls.provider", "org.bouncycastle.jce.provider.BouncyCastleProvider");
++            return this;
++        }
++
++        public void init() {
++            addProperty("[@enabled]", true);
++            addProperty("bind", "127.0.0.1:" + this.listenerPort);
++            addProperty("connectiontimeout", "360000");
++            //addProperty("jmxName", getServertype().name()+"on"+this.listenerPort);
++
++        }
++
++    }
++
++    public static class Pop3TestConfiguration extends AbstractTestConfiguration {
++
++        @Override
++        public void init() {
++            super.init();
++
++            addProperty("helloName", "pop3 on port " + getListenerPort());
++
++            addProperty("handlerchain.[@coreHandlersPackage]", RefinedCoreCmdHandlerLoader.class.getName());
++
++        }
++
++    }
++
++    public static class ImapTestConfiguration extends AbstractTestConfiguration {
++
++        @Override
++        public void init() {
++            super.init();
++
++            addProperty("helloName", "imap on port " + getListenerPort());
++
++        }
++
++    }
++
++    public static class SmtpTestConfiguration extends AbstractTestConfiguration {
++
++        @Override
++        public void init() {
++            super.init();
++            addProperty("handlerchain.handler[@class]", RefinedSmtpCoreCmdHandlerLoader.class.getName());
++
++        }
++
++        public SmtpTestConfiguration setRequireAuth(final boolean requireAuth) {
++
++            addProperty("authRequired", requireAuth);
++            return this;
++        }
++
++        public SmtpTestConfiguration setHeloEhloEnforcement(final boolean heloEhloEnforcement) {
++
++            addProperty("heloEhloEnforcement", heloEhloEnforcement);
++            return this;
++        }
++
++    }
++
++    public static class DummySocketFactory extends SSLSocketFactory {
++
++        @Override
++        public Socket createSocket(final String host, final int port) throws IOException, UnknownHostException {
++            throw new IOException("dummy socket factory");
++        }
++
++        @Override
++        public Socket createSocket(final InetAddress host, final int port) throws IOException {
++            throw new IOException("dummy socket factory");
++        }
++
++        @Override
++        public Socket createSocket(final String host, final int port, final InetAddress localHost, final int localPort) throws IOException,
++                UnknownHostException {
++            throw new IOException("dummy socket factory");
++        }
++
++        @Override
++        public Socket createSocket(final InetAddress address, final int port, final InetAddress localAddress, final int localPort)
++                throws IOException {
++            throw new IOException("dummy socket factory");
++        }
++
++        @Override
++        public Socket createSocket(final Socket arg0, final String arg1, final int arg2, final boolean arg3) throws IOException {
++            throw new IOException("dummy socket factory");
++        }
++
++        @Override
++        public String[] getDefaultCipherSuites() {
++            return new String[0];
++        }
++
++        @Override
++        public String[] getSupportedCipherSuites() {
++            return new String[0];
++        }
++
++    }
++
++    private final class AlterableDNSServer implements DNSService {
++
++        private InetAddress localhostByName = null;
++
++        public Collection<String> findMXRecords(final String hostname) {
++            final List<String> res = new ArrayList<String>();
++            if (hostname == null) {
++                return res;
++            }
++            if ("james.apache.org".equals(hostname)) {
++                res.add("nagoya.apache.org");
++            }
++            return res;
++        }
++
++        public Iterator<HostAddress> getSMTPHostAddresses(final String domainName) {
++            throw new UnsupportedOperationException("Unimplemented mock service");
++        }
++
++        public InetAddress[] getAllByName(final String host) throws UnknownHostException {
++            return new InetAddress[] { getByName(host) };
++        }
++
++        public InetAddress getByName(final String host) throws UnknownHostException {
++            if (getLocalhostByName() != null) {
++                if ("127.0.0.1".equals(host)) {
++                    return getLocalhostByName();
++                }
++            }
++
++            if ("0.0.0.0".equals(host)) {
++                return InetAddress.getByName("0.0.0.0");
++            }
++
++            if ("james.apache.org".equals(host)) {
++                return InetAddress.getByName("james.apache.org");
++            }
++
++            if ("abgsfe3rsf.de".equals(host)) {
++                throw new UnknownHostException();
++            }
++
++            if ("128.0.0.1".equals(host) || "192.168.0.1".equals(host) || "127.0.0.1".equals(host) || "127.0.0.0".equals(host)
++                    || "255.0.0.0".equals(host) || "255.255.255.255".equals(host)) {
++                return InetAddress.getByName(host);
++            }
++
++            throw new UnsupportedOperationException("getByName not implemented in mock for host: " + host);
++        }
++
++        public Collection<String> findTXTRecords(final String hostname) {
++            final List<String> res = new ArrayList<String>();
++            if (hostname == null) {
++                return res;
++            }
++
++            if ("2.0.0.127.bl.spamcop.net.".equals(hostname)) {
++                res.add("Blocked - see http://www.spamcop.net/bl.shtml?127.0.0.2");
++            }
++            return res;
++        }
++
++        public InetAddress getLocalhostByName() {
++            return localhostByName;
++        }
++
++        public void setLocalhostByName(final InetAddress localhostByName) {
++            this.localhostByName = localhostByName;
++        }
++
++        public String getHostName(final InetAddress addr) {
++            return addr.getHostName();
++        }
++
++        public InetAddress getLocalHost() throws UnknownHostException {
++            return InetAddress.getLocalHost();
++        }
++    }
++
++}
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedCoreCmdHandlerLoader.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedCoreCmdHandlerLoader.java	(Revision 0)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedCoreCmdHandlerLoader.java	(Arbeitskopie)
+@@ -0,0 +1,31 @@
++/**
++ *  Licensed to the Apache Software Foundation (ASF) under one or more
++ *  contributor license agreements.  See the NOTICE file distributed with
++ *  this work for additional information regarding copyright ownership.
++ *  The ASF licenses this file to You under the Apache License, Version 2.0
++ *  (the "License"); you may not use this file except in compliance with
++ *  the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++package org.apache.geronimo.javamail.testserver;
++
++
++
++public class RefinedCoreCmdHandlerLoader extends org.apache.james.pop3server.core.CoreCmdHandlerLoader {
++
++    public RefinedCoreCmdHandlerLoader() {
++        super();
++        getHandlers().add(ApopCmdHandler.class.getName());
++        
++    }
++    
++    
++
++}
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedJMXHandlersLoader.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedJMXHandlersLoader.java	(Revision 0)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedJMXHandlersLoader.java	(Arbeitskopie)
+@@ -0,0 +1,48 @@
++/**
++ *  Licensed to the Apache Software Foundation (ASF) under one or more
++ *  contributor license agreements.  See the NOTICE file distributed with
++ *  this work for additional information regarding copyright ownership.
++ *  The ASF licenses this file to You under the Apache License, Version 2.0
++ *  (the "License"); you may not use this file except in compliance with
++ *  the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++package org.apache.geronimo.javamail.testserver;
++
++
++import java.util.ArrayList;
++import java.util.List;
++
++import org.apache.james.protocols.lib.handler.HandlersPackage;
++import org.apache.james.smtpserver.jmx.CommandHandlerResultJMXMonitor;
++import org.apache.james.smtpserver.jmx.ConnectHandlerResultJMXMonitor;
++import org.apache.james.smtpserver.jmx.HookResultJMXMonitor;
++//import org.apache.james.smtpserver.jmx.LineHandlerResultJMXMonitor;
++
++public class RefinedJMXHandlersLoader implements HandlersPackage {
++
++    private final List<String> handlers = new ArrayList<String>();
++
++    public RefinedJMXHandlersLoader() {
++        handlers.add(ConnectHandlerResultJMXMonitor.class.getName());
++        handlers.add(CommandHandlerResultJMXMonitor.class.getName());
++        //handlers.add(LineHandlerResultJMXMonitor.class.getName());
++        handlers.add(HookResultJMXMonitor.class.getName());
++    }
++
++    /**
++     * @see org.apache.james.protocols.api.handler.HandlersPackage#getHandlers()
++     */
++    public List<String> getHandlers() {
++        return handlers;
++    }
++
++}
++
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedSmtpCoreCmdHandlerLoader.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedSmtpCoreCmdHandlerLoader.java	(Revision 0)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/testserver/RefinedSmtpCoreCmdHandlerLoader.java	(Arbeitskopie)
+@@ -0,0 +1,146 @@
++/**
++ *  Licensed to the Apache Software Foundation (ASF) under one or more
++ *  contributor license agreements.  See the NOTICE file distributed with
++ *  this work for additional information regarding copyright ownership.
++ *  The ASF licenses this file to You under the Apache License, Version 2.0
++ *  (the "License"); you may not use this file except in compliance with
++ *  the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++package org.apache.geronimo.javamail.testserver;
++
++ /****************************************************************
++ * or more contributor license agreements.  See the NOTICE file *
++ * distributed with this work for additional information        *
++ * regarding copyright ownership.  The ASF licenses this file   *
++ * to you under the Apache License, Version 2.0 (the            *
++ * "License"); you may not use this file except in compliance   *
++ * with the License.  You may obtain a copy of the License at   *
++ *                                                              *
++ *   http://www.apache.org/licenses/LICENSE-2.0                 *
++ *                                                              *
++ * Unless required by applicable law or agreed to in writing,   *
++ * software distributed under the License is distributed on an  *
++ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY       *
++ * KIND, either express or implied.  See the License for the    *
++ * specific language governing permissions and limitations      *
++ * under the License.                                           *
++ ****************************************************************/
++
++import java.util.LinkedList;
++import java.util.List;
++
++import org.apache.james.protocols.api.handler.CommandDispatcher;
++import org.apache.james.protocols.api.handler.CommandHandlerResultLogger;
++import org.apache.james.protocols.lib.handler.HandlersPackage;
++import org.apache.james.protocols.smtp.core.ExpnCmdHandler;
++import org.apache.james.protocols.smtp.core.HeloCmdHandler;
++import org.apache.james.protocols.smtp.core.HelpCmdHandler;
++import org.apache.james.protocols.smtp.core.NoopCmdHandler;
++import org.apache.james.protocols.smtp.core.PostmasterAbuseRcptHook;
++import org.apache.james.protocols.smtp.core.QuitCmdHandler;
++import org.apache.james.protocols.smtp.core.ReceivedDataLineFilter;
++import org.apache.james.protocols.smtp.core.RsetCmdHandler;
++import org.apache.james.protocols.smtp.core.VrfyCmdHandler;
++import org.apache.james.protocols.smtp.core.esmtp.AuthCmdHandler;
++import org.apache.james.protocols.smtp.core.esmtp.EhloCmdHandler;
++import org.apache.james.protocols.smtp.core.esmtp.MailSizeEsmtpExtension;
++import org.apache.james.protocols.smtp.core.esmtp.StartTlsCmdHandler;
++import org.apache.james.protocols.smtp.core.log.HookResultLogger;
++import org.apache.james.smtpserver.AddDefaultAttributesMessageHook;
++import org.apache.james.smtpserver.AuthRequiredToRelayRcptHook;
++import org.apache.james.smtpserver.DataLineJamesMessageHookHandler;
++import org.apache.james.smtpserver.JamesDataCmdHandler;
++import org.apache.james.smtpserver.JamesMailCmdHandler;
++import org.apache.james.smtpserver.JamesRcptCmdHandler;
++import org.apache.james.smtpserver.JamesWelcomeMessageHandler;
++import org.apache.james.smtpserver.SendMailHandler;
++import org.apache.james.smtpserver.SenderAuthIdentifyVerificationRcptHook;
++import org.apache.james.smtpserver.UsersRepositoryAuthHook;
++
++/**
++ * This class represent the base command handlers which are shipped with james.
++ */
++public class RefinedSmtpCoreCmdHandlerLoader implements HandlersPackage {
++
++    private final String COMMANDDISPATCHER = CommandDispatcher.class.getName();
++    private final String AUTHCMDHANDLER = AuthCmdHandler.class.getName();
++    private final String DATACMDHANDLER = JamesDataCmdHandler.class.getName();
++    private final String EHLOCMDHANDLER = EhloCmdHandler.class.getName();
++    private final String EXPNCMDHANDLER = ExpnCmdHandler.class.getName();
++    private final String HELOCMDHANDLER = HeloCmdHandler.class.getName();
++    private final String HELPCMDHANDLER = HelpCmdHandler.class.getName();
++    private final String MAILCMDHANDLER = JamesMailCmdHandler.class.getName();
++    private final String NOOPCMDHANDLER = NoopCmdHandler.class.getName();
++    private final String QUITCMDHANDLER = QuitCmdHandler.class.getName();
++    private final String RCPTCMDHANDLER = JamesRcptCmdHandler.class.getName();
++    private final String RSETCMDHANDLER = RsetCmdHandler.class.getName();
++    private final String VRFYCMDHANDLER = VrfyCmdHandler.class.getName();
++    private final String MAILSIZEHOOK = MailSizeEsmtpExtension.class.getName();
++    private final String WELCOMEMESSAGEHANDLER = JamesWelcomeMessageHandler.class.getName();
++    private final String USERSREPOSITORYAUTHHANDLER = UsersRepositoryAuthHook.class.getName();
++    private final String POSTMASTERABUSEHOOK = PostmasterAbuseRcptHook.class.getName();
++    private final String AUTHREQUIREDTORELAY = AuthRequiredToRelayRcptHook.class.getName();
++    private final String SENDERAUTHIDENTITYVERIFICATION = SenderAuthIdentifyVerificationRcptHook.class.getName();
++    private final String RECEIVEDDATALINEFILTER = ReceivedDataLineFilter.class.getName();
++    private final String DATALINEMESSAGEHOOKHANDLER = DataLineJamesMessageHookHandler.class.getName();
++    private final String STARTTLSHANDLER = StartTlsCmdHandler.class.getName();
++
++    // MessageHooks
++    private final String ADDDEFAULTATTRIBUTESHANDLER = AddDefaultAttributesMessageHook.class.getName();
++    private final String SENDMAILHANDLER = SendMailHandler.class.getName();
++
++    // logging stuff
++    private final String COMMANDHANDLERRESULTLOGGER = CommandHandlerResultLogger.class.getName();
++    private final String HOOKRESULTLOGGER = HookResultLogger.class.getName();
++
++    private final List<String> commands = new LinkedList<String>();
++
++    public RefinedSmtpCoreCmdHandlerLoader() {
++        // Insert the base commands in the Map
++        commands.add(WELCOMEMESSAGEHANDLER);
++        commands.add(COMMANDDISPATCHER);
++        commands.add(AUTHCMDHANDLER);
++        commands.add(DATACMDHANDLER);
++        commands.add(EHLOCMDHANDLER);
++        commands.add(EXPNCMDHANDLER);
++        commands.add(HELOCMDHANDLER);
++        commands.add(HELPCMDHANDLER);
++        commands.add(MAILCMDHANDLER);
++        commands.add(NOOPCMDHANDLER);
++        commands.add(QUITCMDHANDLER);
++        commands.add(RCPTCMDHANDLER);
++        commands.add(RSETCMDHANDLER);
++        commands.add(VRFYCMDHANDLER);
++        commands.add(MAILSIZEHOOK);
++        commands.add(USERSREPOSITORYAUTHHANDLER);
++        commands.add(AUTHREQUIREDTORELAY);
++        commands.add(SENDERAUTHIDENTITYVERIFICATION);
++        commands.add(POSTMASTERABUSEHOOK);
++        commands.add(RECEIVEDDATALINEFILTER);
++        commands.add(DATALINEMESSAGEHOOKHANDLER);
++        commands.add(STARTTLSHANDLER);
++        // Add the default messageHooks
++        commands.add(ADDDEFAULTATTRIBUTESHANDLER);
++        commands.add(SENDMAILHANDLER);
++
++        // Add logging stuff
++        commands.add(COMMANDHANDLERRESULTLOGGER);
++        commands.add(HOOKRESULTLOGGER);
++    }
++
++    /**
++     * @see org.apache.james.protocols.api.handler.HandlersPackage#getHandlers()
++     */
++    public List<String> getHandlers() {
++        return commands;
++    }
++}
++
+Index: geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/transport/smtp/SMTPTransportTest.java
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/transport/smtp/SMTPTransportTest.java	(Revision 0)
++++ geronimo-javamail_1.4_provider/src/test/java/org/apache/geronimo/javamail/transport/smtp/SMTPTransportTest.java	(Arbeitskopie)
+@@ -0,0 +1,57 @@
++/**
++ *  Licensed to the Apache Software Foundation (ASF) under one or more
++ *  contributor license agreements.  See the NOTICE file distributed with
++ *  this work for additional information regarding copyright ownership.
++ *  The ASF licenses this file to You under the Apache License, Version 2.0
++ *  (the "License"); you may not use this file except in compliance with
++ *  the License.  You may obtain a copy of the License at
++ *
++ *     http://www.apache.org/licenses/LICENSE-2.0
++ *
++ *  Unless required by applicable law or agreed to in writing, software
++ *  distributed under the License is distributed on an "AS IS" BASIS,
++ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ *  See the License for the specific language governing permissions and
++ *  limitations under the License.
++ */
++package org.apache.geronimo.javamail.transport.smtp;
++
++import java.util.Properties;
++
++import javax.mail.Session;
++import javax.mail.Transport;
++import javax.mail.internet.InternetAddress;
++import javax.mail.internet.MimeMessage;
++
++import org.apache.geronimo.javamail.testserver.AbstractProtocolTest;
++
++public class SMTPTransportTest extends AbstractProtocolTest {
++
++    public void testSSLEnable() throws Exception {
++
++        
++        smtpConf.enableSSL(false, false);
++
++        start();
++
++        Properties props = new Properties();
++        props.setProperty("mail.transport.protocol", "smtp");
++        props.setProperty("mail.smtp.port", String.valueOf(smtpConf.getListenerPort()));
++        props.setProperty("mail.debug", "true");
++
++        Session jmsession = Session.getInstance(props);
++        Transport t = jmsession.getTransport();
++        t.connect();
++        
++        MimeMessage msg = new MimeMessage(jmsession);
++        msg.setFrom(new InternetAddress("test@apache.org"));
++        msg.setSubject("Hi!");
++        msg.setText("All your base are belong to us");
++        
++        
++        t.sendMessage(msg, new InternetAddress[]{new InternetAddress("testto@apache.org")});
++
++    }
++
++
++}
+Index: geronimo-javamail_1.4_provider/src/test/resources/dummykeystore.jks
+===================================================================
+Kann nicht anzeigen: Dateityp ist als binär angegeben.
+svn:mime-type = application/x-java-keystore
+Index: geronimo-javamail_1.4_provider/src/test/resources/dummykeystore.jks
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/resources/dummykeystore.jks	(Revision 0)
++++ geronimo-javamail_1.4_provider/src/test/resources/dummykeystore.jks	(Arbeitskopie)
+
+Eigenschaftsänderungen: geronimo-javamail_1.4_provider/src/test/resources/dummykeystore.jks
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++application/x-java-keystore
+\ No newline at end of property
+Index: geronimo-javamail_1.4_provider/src/test/resources/messages/multipart.msg
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/resources/messages/multipart.msg	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/test/resources/messages/multipart.msg	(Arbeitskopie)
+@@ -1,19 +1,19 @@
+-Date: Sat, 11 Oct 2008 00:48:01 +0200 (CEST)
+-From: test@localhost
+-To: test@localhost
+-Message-ID: urn:uuid:219365EB848AD9CACB1223678880948
+-Subject: Test
+-MIME-Version: 1.0
+-Content-Type: multipart/mixed; boundary="----=_Part_0_6727097.1223678881682"
+-
+-------=_Part_0_6727097.1223678881682
+-Content-Type: text/plain; charset=us-ascii
+-Content-Transfer-Encoding: 7bit
+-
+-First part
+-------=_Part_0_6727097.1223678881682
+-Content-Type: text/plain; charset=us-ascii
+-Content-Transfer-Encoding: 7bit
+-
+-Second part
+-------=_Part_0_6727097.1223678881682--
++Date: Sat, 11 Oct 2008 00:48:01 +0200 (CEST)
++From: from@localhost
++To: serveruser@localhost
++Message-ID: urn:uuid:219365EB848AD9CACB1223678880948
++Subject: Test
++MIME-Version: 1.0
++Content-Type: multipart/mixed; boundary="----=_Part_0_6727097.1223678881682"
++
++------=_Part_0_6727097.1223678881682
++Content-Type: text/plain; charset=us-ascii
++Content-Transfer-Encoding: 7bit
++
++First part
++------=_Part_0_6727097.1223678881682
++Content-Type: text/plain; charset=us-ascii
++Content-Transfer-Encoding: 7bit
++
++Second part
++------=_Part_0_6727097.1223678881682--
+Index: geronimo-javamail_1.4_provider/src/test/resources/messages/simple.msg
+===================================================================
+--- geronimo-javamail_1.4_provider/src/test/resources/messages/simple.msg	(Revision 1637608)
++++ geronimo-javamail_1.4_provider/src/test/resources/messages/simple.msg	(Arbeitskopie)
+@@ -1,11 +1,11 @@
+-Date: Sat, 11 Oct 2008 00:48:01 +0200 (CEST)
+-From: test@localhost
+-To: test@localhost
+-Subject: Test Foo
+-MIME-Version: 1.0
+-Content-Type: text/plain; charset=us-ascii
+-Content-Transfer-Encoding: 7bit
+-
+-Foo Bar
+-
+-
++Date: Sat, 11 Oct 2008 00:48:01 +0200 (CEST)
++From: from@localhost
++To: serveruser@localhost
++Subject: Test Foo
++MIME-Version: 1.0
++Content-Type: text/plain; charset=us-ascii
++Content-Transfer-Encoding: 7bit
++
++Foo Bar
++
++
+Index: pom.xml
+===================================================================
+--- pom.xml	(Revision 1637608)
++++ pom.xml	(Arbeitskopie)
+@@ -1,33 +1,27 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+-<!--
+-    Licensed to the Apache Software Foundation (ASF) under one
+-    or more contributor license agreements.  See the NOTICE file
+-    distributed with this work for additional information
+-    regarding copyright ownership.  The ASF licenses this file
+-    to you under the Apache License, Version 2.0 (the
+-    "License"); you may not use this file except in compliance
+-    with the License.  You may obtain a copy of the License at
++<!-- Licensed to the Apache Software Foundation (ASF) under one or more contributor 
++    license agreements. See the NOTICE file distributed with this work for additional 
++    information regarding copyright ownership. The ASF licenses this file to 
++    you under the Apache License, Version 2.0 (the "License"); you may not use 
++    this file except in compliance with the License. You may obtain a copy of 
++    the License at http://www.apache.org/licenses/LICENSE-2.0 Unless required 
++    by applicable law or agreed to in writing, software distributed under the 
++    License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS 
++    OF ANY KIND, either express or implied. See the License for the specific 
++    language governing permissions and limitations under the License. -->
+ 
+-     http://www.apache.org/licenses/LICENSE-2.0
++<!-- $Rev$ $Date: 2014-07-20 09:36:35 +0200 (So, 20. Jul 2014) 
++    $ -->
+ 
+-    Unless required by applicable law or agreed to in writing,
+-    software distributed under the License is distributed on an
+-    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+-    KIND, either express or implied.  See the License for the
+-    specific language governing permissions and limitations
+-    under the License.
+--->
++<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+ 
+-<!-- $Rev$ $Date$ -->
+-
+-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+-
+     <modelVersion>4.0.0</modelVersion>
+ 
+     <parent>
+         <groupId>org.apache.geronimo.genesis</groupId>
+         <artifactId>genesis-java5-flava</artifactId>
+-        <version>2.0</version>
++        <version>2.2</version>
+     </parent>
+ 
+     <groupId>org.apache.geronimo.javamail</groupId>
+@@ -35,7 +29,7 @@
+     <name>Geronimo JavaMail 1.4</name>
+     <packaging>pom</packaging>
+ 
+-    <version>1.8.5-SNAPSHOT</version>
++    <version>1.9.0-SNAPSHOT</version>
+ 
+     <description>
+         Geronimmo JavaMail Bundle.
+@@ -72,7 +66,7 @@
+             <dependency>
+                 <groupId>org.apache.geronimo.specs</groupId>
+                 <artifactId>geronimo-javamail_1.4_spec</artifactId>
+-                <version>1.7.1</version>
++                <version>1.7.2-SNAPSHOT</version>
+             </dependency>
+ 
+             <dependency>
+@@ -104,13 +98,67 @@
+                 <plugin>
+                     <groupId>org.apache.maven.plugins</groupId>
+                     <artifactId>maven-shade-plugin</artifactId>
+-                    <version>1.0.1</version>
++                    <version>2.3</version>
+                 </plugin>
++
++                <plugin>
++                    <groupId>org.apache.maven.plugins</groupId>
++                    <artifactId>maven-surefire-plugin</artifactId>
++                    <version>2.18</version>
++                </plugin>
++
++                <plugin>
++                    <groupId>org.apache.maven.plugins</groupId>
++                    <artifactId>maven-site-plugin</artifactId>
++                    <version>3.3</version>
++                    <configuration>
++                        <stagingDirectory>${staging.directory}</stagingDirectory>
++                    </configuration>
++                    <dependencies>
++                        <dependency>
++                            <groupId>org.apache.maven.doxia</groupId>
++                            <artifactId>doxia-module-markdown</artifactId>
++                            <version>1.3</version>
++                        </dependency>
++                    </dependencies>
++                </plugin>
+             </plugins>
+         </pluginManagement>
+ 
+         <plugins>
++
+             <plugin>
++                <groupId>org.apache.rat</groupId>
++                <artifactId>apache-rat-plugin</artifactId>
++                <configuration>
++                    <includes>
++                        <include>src/**/*</include>
++                        <include>pom.xml</include>
++                    </includes>
++                    <excludes>
++                        <exclude>**/*/MANIFEST.MF</exclude>
++                        <exclude>.git</exclude>
++                        <exclude>.gitignore</exclude>
++                        <exclude>.idea</exclude>
++                        <exclude>*.iws</exclude>
++                        <exclude>*.iml</exclude>
++                        <exclude>*.ipr</exclude>
++                        <exclude>**/src/test/resources/**/*.bodystructure</exclude>
++                        <exclude>**/src/test/resources/**/*.msg</exclude>
++                        <exclude>**/resources/OSGI-INF/providers/**/*</exclude>
++                    </excludes>
++                </configuration>
++                <executions>
++                    <execution>
++                        <phase>verify</phase>
++                        <goals>
++                            <goal>check</goal>
++                        </goals>
++                    </execution>
++                </executions>
++            </plugin>
++
++            <plugin>
+                 <groupId>org.apache.maven.plugins</groupId>
+                 <artifactId>maven-enforcer-plugin</artifactId>
+                 <executions>
+@@ -126,9 +174,9 @@
+                                     <version>[1.5,)</version>
+                                 </requireJavaVersion>
+ 
+-                                <!-- Allow any Maven >= 2.0.5 -->
++                                <!-- Allow any Maven >= 2.0.7 -->
+                                 <requireMavenVersion>
+-                                    <version>[2.0.5,)</version>
++                                    <version>[2.0.7,)</version>
+                                 </requireMavenVersion>
+                             </rules>
+                         </configuration>
+@@ -143,4 +191,84 @@
+         <module>geronimo-javamail_1.4_mail</module>
+     </modules>
+ 
++    <reporting>
++        <plugins>
++            <plugin>
++                <groupId>org.codehaus.mojo</groupId>
++                <artifactId>findbugs-maven-plugin</artifactId>
++                <version>3.0.0</version>
++                <configuration>
++                    <xmlOutput>true</xmlOutput>
++                    <!-- Optional directory to put findbugs xdoc xml report -->
++                    <xmlOutputDirectory>target/site</xmlOutputDirectory>
++                </configuration>
++            </plugin>
++            <plugin>
++                <groupId>org.apache.maven.plugins</groupId>
++                <artifactId>maven-pmd-plugin</artifactId>
++                <version>3.2</version>
++            </plugin>
++            <plugin>
++                <groupId>org.apache.maven.plugins</groupId>
++                <artifactId>maven-project-info-reports-plugin</artifactId>
++                <version>2.7</version>
++            </plugin>
++            <plugin>
++                <groupId>org.apache.maven.plugins</groupId>
++                <artifactId>maven-javadoc-plugin</artifactId>
++                <version>2.9.1</version>
++                <configuration>
++                    <notimestamp>true</notimestamp>
++                    <show>private</show>
++                </configuration>
++                <reportSets>
++                    <reportSet>
++                        <reports>
++                            <report>javadoc</report>
++                        </reports>
++                    </reportSet>
++                    <reportSet>
++                        <inherited>false</inherited>
++                        <reports>
++                            <report>aggregate</report>
++                        </reports>
++                    </reportSet>
++                </reportSets>
++            </plugin>
++            <plugin>
++                <groupId>org.apache.maven.plugins</groupId>
++                <artifactId>maven-surefire-report-plugin</artifactId>
++                <version>2.18</version>
++                <configuration>
++                    <aggregate>true</aggregate>
++                </configuration>
++            </plugin>
++            <plugin>
++                <groupId>org.codehaus.mojo</groupId>
++                <artifactId>cobertura-maven-plugin</artifactId>
++                <version>2.6</version>
++                <configuration>
++                    <formats>
++                        <format>html</format>
++                    </formats>
++                    <aggregate>true</aggregate>
++                </configuration>
++            </plugin>
++            <plugin>
++                <groupId>org.codehaus.mojo</groupId>
++                <artifactId>versions-maven-plugin</artifactId>
++                <version>2.1</version>
++                <reportSets>
++                    <reportSet>
++                        <reports>
++                            <report>dependency-updates-report</report>
++                            <report>plugin-updates-report</report>
++                            <report>property-updates-report</report>
++                        </reports>
++                    </reportSet>
++                </reportSets>
++            </plugin>
++        </plugins>
++    </reporting>
++
+ </project>
+Index: src/site/apt/privacy-policy.apt
+===================================================================
+--- src/site/apt/privacy-policy.apt	(Revision 0)
++++ src/site/apt/privacy-policy.apt	(Arbeitskopie)
+@@ -0,0 +1,52 @@
++ ----
++ Privacy Policy
++ -----
++ Olivier Lamy
++ -----
++ 2013-11-13
++ -----
++
++~~ Licensed to the Apache Software Foundation (ASF) under one
++~~ or more contributor license agreements.  See the NOTICE file
++~~ distributed with this work for additional information
++~~ regarding copyright ownership.  The ASF licenses this file
++~~ to you under the Apache License, Version 2.0 (the
++~~ "License"); you may not use this file except in compliance
++~~ with the License.  You may obtain a copy of the License at
++~~
++~~   http://www.apache.org/licenses/LICENSE-2.0
++~~
++~~ Unless required by applicable law or agreed to in writing,
++~~ software distributed under the License is distributed on an
++~~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++~~ KIND, either express or implied.  See the License for the
++~~ specific language governing permissions and limitations
++~~ under the License.
++
++Privacy Policy
++
++  Information about your use of this website is collected using server access logs and a tracking cookie. The 
++  collected information consists of the following:
++
++  [[1]] The IP address from which you access the website;
++  
++  [[2]] The type of browser and operating system you use to access our site;
++  
++  [[3]] The date and time you access our site;
++  
++  [[4]] The pages you visit; and
++  
++  [[5]] The addresses of pages from where you followed a link to our site.
++
++  []
++
++  Part of this information is gathered using a tracking cookie set by the 
++  {{{http://www.google.com/analytics/}Google Analytics}} service and handled by Google as described in their 
++  {{{http://www.google.com/privacy.html}privacy policy}}. See your browser documentation for instructions on how to 
++  disable the cookie if you prefer not to share this data with Google.
++
++  We use the gathered information to help us make our site more useful to visitors and to better understand how and 
++  when our site is used. We do not track or collect personally identifiable information or associate gathered data 
++  with any personally identifying information from other sources.
++
++  By using this website, you consent to the collection of this data in the manner and for the purpose described above.
+Index: src/site/markdown/index.md
+===================================================================
+--- src/site/markdown/index.md	(Revision 0)
++++ src/site/markdown/index.md	(Arbeitskopie)
+@@ -0,0 +1,35 @@
++<!---
++Licensed to the Apache Software Foundation (ASF) under one
++or more contributor license agreements.  See the NOTICE file
++distributed with this work for additional information
++regarding copyright ownership.  The ASF licenses this file
++to you under the Apache License, Version 2.0 (the
++"License"); you may not use this file except in compliance
++with the License.  You may obtain a copy of the License at
++
++  http://www.apache.org/licenses/LICENSE-2.0
++
++Unless required by applicable law or agreed to in writing,
++software distributed under the License is distributed on an
++"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
++KIND, either express or implied.  See the License for the
++specific language governing permissions and limitations
++under the License.
++-->
++# Geronimo JavaMail 1.4
++
++Geronimo JavaMail 1.4
++
++## Get started
++
++Just get it from maven
++
++### Core
++
++<pre class="prettyprint linenums"><![CDATA[
++<dependency>
++	<groupId>org.apache.geronimo.javamail</groupId>
++	<artifactId>geronimo-javamail_1.4_provider</artifactId>
++	<version>1.9.0-SNAPSHOT</version>
++</dependency>
++]]></pre>
+\ No newline at end of file
+Index: src/site/site.xml
+===================================================================
+--- src/site/site.xml	(Revision 0)
++++ src/site/site.xml	(Arbeitskopie)
+@@ -0,0 +1,86 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<!--
++ Licensed to the Apache Software Foundation (ASF) under one or more
++ contributor license agreements.  See the NOTICE file distributed with
++ this work for additional information regarding copyright ownership.
++ The ASF licenses this file to You under the Apache License, Version 2.0
++ (the "License"); you may not use this file except in compliance with
++ the License.  You may obtain a copy of the License at
++
++      http://www.apache.org/licenses/LICENSE-2.0
++
++ Unless required by applicable law or agreed to in writing, software
++ distributed under the License is distributed on an "AS IS" BASIS,
++ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ See the License for the specific language governing permissions and
++ limitations under the License.
++-->
++<project name="Apache Johnzon"
++         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++         xmlns="http://maven.apache.org/DECORATION/1.0.1"
++         xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.1
++                             http://maven.apache.org/xsd/decoration-1.0.1.xsd">
++  <bannerLeft>
++    <name>Geronimo JavaMail</name>
++    <alt>Geronimo JavaMail</alt>
++    <href>/index.html</href>
++  </bannerLeft>
++  <bannerRight>
++    <src>http://geronimo.apache.org/images/topleft_logo_437x64.gif</src>
++    <href>http://geronimo.apache.org/</href>
++  </bannerRight>
++
++  <custom>
++    <fluidoSkin>
++      <topBarEnabled>true</topBarEnabled>
++      <sideBarEnabled>true</sideBarEnabled>
++      <sourceLineNumbersEnabled>true</sourceLineNumbersEnabled>
++    </fluidoSkin>
++  </custom>
++
++  <skin>
++    <groupId>org.apache.maven.skins</groupId>
++    <artifactId>maven-fluido-skin</artifactId>
++    <version>1.3.0</version>
++  </skin>
++
++  <body>
++
++    <head>
++
++      <script type="text/javascript">
++
++        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
++        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
++        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
++        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
++
++        ga('create', 'UA-3211522-15', 'apache.org');
++        ga('send', 'pageview');
++
++      </script>
++
++    </head>
++
++    <menu name="User Guide">
++      <item name="Home" href="/index.html"/>
++    </menu>
++
++    <menu ref="reports" inherit="bottom"/>
++
++    <menu name="ASF">
++      <item name="How Apache Works" href="http://www.apache.org/foundation/how-it-works.html"/>
++      <item name="Foundation" href="http://www.apache.org/foundation/"/>
++      <item name="Sponsoring Apache" href="http://www.apache.org/foundation/sponsorship.html"/>
++      <item name="Thanks" href="http://www.apache.org/foundation/thanks.html"/>
++    </menu>
++
++    <footer>
++      <div class="row span16"><div>Apache Geronimo, Apache, the Apache feather logo, and the Apache Johnzon project logos are trademarks of The Apache Software Foundation.
++        All other marks mentioned may be trademarks or registered trademarks of their respective owners.</div>
++        <a href="${project.url}/privacy-policy.html">Privacy Policy</a>
++      </div>
++    </footer>
++
++  </body>
++</project>
+
+Eigenschaftsänderungen: src/site/site.xml
+___________________________________________________________________
+Added: svn:mime-type
+## -0,0 +1 ##
++text/plain
+\ No newline at end of property
