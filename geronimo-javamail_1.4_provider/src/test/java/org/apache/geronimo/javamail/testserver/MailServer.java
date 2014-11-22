@@ -357,20 +357,20 @@ public class MailServer {
 
     protected static File getAbsoluteFilePathFromClassPath(final String fileNameFromClasspath) {
 
-        File jaasConfigFile = null;
-        final URL jaasConfigURL = MailServer.class.getClassLoader().getResource(fileNameFromClasspath);
-        if (jaasConfigURL != null) {
+        File configFile = null;
+        final URL configURL = MailServer.class.getClassLoader().getResource(fileNameFromClasspath);
+        if (configURL != null) {
             try {
-                jaasConfigFile = new File(URLDecoder.decode(jaasConfigURL.getFile(), "UTF-8"));
+                configFile = new File(URLDecoder.decode(configURL.getFile(), "UTF-8"));
             } catch (final UnsupportedEncodingException e) {
                 return null;
             }
 
-            if (jaasConfigFile.exists() && jaasConfigFile.canRead()) {
-                return jaasConfigFile;
+            if (configFile.exists() && configFile.canRead()) {
+                return configFile;
             } else {
 
-                System.out.println("Cannot read from {}, maybe the file does not exists? " + jaasConfigFile.getAbsolutePath());
+                System.out.println("Cannot read from {}, maybe the file does not exists? " + configFile.getAbsolutePath());
             }
 
         } else {
