@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.geronimo.mail.util.QuotedPrintableEncoderStream;
+import org.apache.james.mime4j.codec.QuotedPrintableOutputStream;
 
 /**
  * @version $Rev: 668614 $ $Date: 2008-06-17 13:04:26 +0200 (Di, 17. Jun 2008) $
@@ -50,7 +50,7 @@ public class TraceInputStream extends FilterInputStream {
         super(in);
         this.debug = debug;
         if (encode) {
-            this.traceStream = new QuotedPrintableEncoderStream(traceStream);
+            this.traceStream = new QuotedPrintableOutputStream(traceStream, false);
         } else {
             this.traceStream = traceStream;
         }

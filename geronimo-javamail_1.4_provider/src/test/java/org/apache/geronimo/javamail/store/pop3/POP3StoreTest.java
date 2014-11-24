@@ -55,7 +55,7 @@ public class POP3StoreTest extends AbstractProtocolTest {
         props.setProperty("mail.smtp.port", String.valueOf(smtpConf.getListenerPort()));
         props.setProperty("mail.debug","true");
         Session session = Session.getInstance(props);
-        // Send messages for the current test to GreenMail
+        // Send messages for the current test to James
         sendMessage(session, "/messages/multipart.msg");
         sendMessage(session, "/messages/simple.msg");
         server.ensureMsgCount(2);

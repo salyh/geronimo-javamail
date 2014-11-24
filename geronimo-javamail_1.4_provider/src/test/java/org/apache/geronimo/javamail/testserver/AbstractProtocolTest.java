@@ -102,6 +102,10 @@ public abstract class AbstractProtocolTest extends TestCase {
         }
         Transport.send(message, new Address[] { new InternetAddress("serveruser@localhost") });
     }
+    
+    protected void sendMessage(final MimeMessage message) throws Exception {
+        Transport.send(message, new Address[] { new InternetAddress("serveruser@localhost") });
+    }
 
     @Override
     protected void tearDown() throws Exception {

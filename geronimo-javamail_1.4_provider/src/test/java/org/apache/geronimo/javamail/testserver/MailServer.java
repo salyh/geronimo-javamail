@@ -355,7 +355,7 @@ public class MailServer {
         return queue;
     }
 
-    protected static File getAbsoluteFilePathFromClassPath(final String fileNameFromClasspath) {
+    public static File getAbsoluteFilePathFromClassPath(final String fileNameFromClasspath) {
 
         File configFile = null;
         final URL configURL = MailServer.class.getClassLoader().getResource(fileNameFromClasspath);
