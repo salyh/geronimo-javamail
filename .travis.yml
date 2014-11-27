@@ -2,7 +2,8 @@ language: java
 script: cd geronimo-javamail_1.4 && mvn clean package
 env:
   - MAVEN_OPTS="-Dfile.encoding=UTF-8"
-  - MAVEN_OPTS="-Dfile-encoding=ISO-8859-1"
+  - MAVEN_OPTS="-Dfile.encoding=ISO-8859-1"
+  - MAVEN_OPTS="-Dfile.encoding=US-ASCII" 
 jdk:
   - openjdk6
   - openjdk7
